@@ -1,0 +1,104 @@
+* {
+  box-sizing:border-box;
+  -moz-box-sizing:border-box;
+  -webkit-box-sizing:border-box
+}
+
+body,div,ul,ol,li,h1,h2,h3,h4,h5,h6,input,textarea,p,th,td { 
+    margin:0;
+    padding:0;
+}
+
+body {
+	font: 13px Arial, sans serif;
+}
+
+a {
+	text-decoration: none;
+}
+a:hover {
+	text-decoration: underline;
+}
+
+ul {
+	padding: 10px;
+	list-style-type: none;
+}
+
+#header {
+	position: fixed;
+	height: 50px;
+	width: 100%;
+	padding: 5px;
+	
+	background: rgba(255,255,255,.75);
+	border-bottom: 1px solid #ddd;
+	
+	z-index: 10;
+}
+
+#nav {
+	position: fixed;
+	top: 50px;
+	width: 300px;
+	height: calc(100% - 50px);
+	
+	background: #f1f1f1;
+	border-right: 1px solid #ddd;
+	font-size: 14px;
+	line-height: 1.5em;
+	overflow: auto;
+}
+
+#subscriptions>li {
+	white-space: nowrap;
+	text-overflow: ellipsis;
+	overflow: hidden;
+}
+
+#content {
+	position: relative;
+	left: 300px;
+	top: 50px;
+	width: calc(100% - 300px);
+	height: calc(100% - 50px);
+	padding: 0 15px;
+	
+	background: #f8f8f8;
+}
+
+#login {
+	float: right;
+}
+
+
+.vid {
+	margin: 10px 0;
+	border: 1px solid #808080;
+}
+
+.vidTitle {
+	padding: 5px 10px;
+	
+	background: lightblue;
+	font-weight: bold;
+}
+
+.vidTitle>a {
+	color: #000000;
+}
+
+.vidContent {
+	padding: 10px;
+	overflow: hidden;
+}
+
+.vidImg {
+	float: left;
+}
+
+.vidDesc {
+	float: left;
+	width: calc(100% - 240px);
+	padding-left: 10px;
+}
