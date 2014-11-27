@@ -10,7 +10,6 @@ exports.videos = new YoutubeResource("videos");
 
 exports.setAuthToken = function(token) {
 	authToken = token;
-	console.log("setting authToken to " + token); 
 }
 
 //function setAuthToken(token) {

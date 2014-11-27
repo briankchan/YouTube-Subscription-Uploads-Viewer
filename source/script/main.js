@@ -1,15 +1,9 @@
 window.$ = window.jquery = require("jquery");
+
+var YoutubeApi = require("./youtube-api.js");
 var htmlLinkify = require("html-linkify");
 
-window.YoutubeApi = require("./youtube-api.js");
-
-var apiKey = 'AIzaSyClOj2RmQTkYbfqL4o8mBhzx8Jwo-mNhpo';
-
-var ytapiLoaded = false;
-
 var subscriptions = {};
-
-//var initedGapi;
 
 $(function() {
 	$('#nav').bind('mousewheel', function(e) {
@@ -21,67 +15,26 @@ $(function() {
 		}
 	});
 	
-	//console.log(initedGapi);
-	//console.log(gapi.client.getApiKey());
-	
 	$("#authorize-button").click(function() {
 		authorize(true, populateSubscriptions);
 	}); //log in with UI when button is clicked
 	setTimeout(function() { authorize(false, populateSubscriptions); }, 1); //attempt to log in without UI
 });
 
-//window.initGapi = function() {
-//	initedGapi = true;
-//	console.log("init gapi");
-//	gapi.client.setApiKey(apiKey);
-//
-//	$("#authorize-button").click(function() {
-//		console.log("asdf");
-//		authorize(true, populateSubscriptions);
-//	}); //log in with UI when button is clicked
-//	setTimeout(function() { authorize(false, populateSubscriptions); }, 1); //attempt to log in without UI
-//}
-
 function authorize(interactive, callback) {
-	console.log("authorizing");
-	//gapi.auth.init();
-	chrome.identity.getAuthToken({ interactive: interactive, scopes: ["https://www.googleapis.com/auth/youtube.readonly","https://www.googleapis.com/auth/youtube"] }, function(authResult) {
+	chrome.identity.getAuthToken({ interactive: interactive }, function(authResult) {
 		window.authToken = authResult;
 		if (authResult && !authResult.error) {
 			
 			//logged in
 			$("#authorize-button").css("visibility", "hidden");
 			YoutubeApi.setAuthToken(authResult);
-			//loadYtapi(callback);
 			callback();
 		} else {
 			//not logged in
 			$("#authorize-button").css("visibility", "");
 		}
 	});
-}
-
-
-function loadYtapi(callback) {
-	gapi.client.load('youtube', 'v3', function() {
-		ytapiLoaded = true;
-		callback();
-	});
-}
-
-function ytapi(resource, method, params, callback) {
-	//if (!ytapiLoaded)
-	//	setTimeout(function() { ytapi(resource, method, params, callback); }, 250);
-	//else
-	//	gapi.client.youtube[resource][method](params).execute(function(response) {
-	//		if (response.error)
-	//			if (response.code == 401 && response.message == "Invalid Credentials")
-	//				authorize(false, function() { ytapi(resource, method, params, callback); });
-	//			else
-	//				console.error("Error " + response.code + ": " + response.message);
-	//		else
-	//			callback(response);
-	//	}); //create and execute request to google api
 }
 
 /**
@@ -139,14 +92,12 @@ function clearUploads() {
 
 function loadUploads(channelId) {
 	//get id of uploads playlist
-	//ytapi("channels", "list", {
 	YoutubeApi.channels.get({
 		"id": channelId,
 		"part": "contentDetails",
 		"fields": "items/contentDetails/relatedPlaylists/uploads"
 	}, function(channelJSON) {
 		//get upload videos in playlist
-		//ytapi("playlistItems", "list", {
 		YoutubeApi.playlistItems.get({
 			"playlistId": channelJSON.items[0].contentDetails.relatedPlaylists.uploads,
 			"part": "contentDetails",
@@ -167,7 +118,6 @@ function loadUploads(channelId) {
 			videoIds = videoIds.slice(0, -1);
 			console.log(videoIds);
 			//get details of videos
-			//ytapi("videos", "list", {
 			YoutubeApi.videos.get({
 				"id": videoIds,
 				"part": "id,snippet,contentDetails,statistics",
