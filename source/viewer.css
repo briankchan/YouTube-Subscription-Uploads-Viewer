@@ -77,15 +77,24 @@ ul {
 	border: 1px solid #808080;
 }
 
-.vidTitle {
+.vidUploader {
 	padding: 5px 10px;
 	
 	background: lightblue;
+	font-size: 15px;
 	font-weight: bold;
 }
 
-.vidTitle>a {
+.vidUploader>a {
 	color: #000000;
+}
+.vidUploader>a:hover {
+	color: #000000;
+	text-decoration: none;
+}
+.vidUploaderImg {
+	margin-right: 10px;
+	vertical-align: text-bottom;
 }
 
 .vidContent {
@@ -97,8 +106,20 @@ ul {
 	float: left;
 }
 
-.vidDesc {
+.vidText {
 	float: left;
 	width: calc(100% - 240px);
 	padding-left: 10px;
+}
+
+.vidTitle {
+	margin-bottom: 3px;
+	font-size: 15px;
+	font-weight: bold;
+}
+
+.vidTime {
+	margin-bottom: 3px;
+	color: gray;
+	font-size:12px;
 }

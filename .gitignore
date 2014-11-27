@@ -1,0 +1,5 @@
+node_modules/
+bower_components/
+.idea/
+source/viewer.js
+source/viewer.js.map

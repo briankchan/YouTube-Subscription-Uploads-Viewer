@@ -7,8 +7,8 @@
 	"background": {
 		"scripts": ["background.js"]
 	},
-	"permissions": [ "http://*.google.com/", "https://accounts.google.com/*", "https://www.googleapis.com/*", "tabs", "identity" ],
-	"content_security_policy": "script-src 'self' https://apis.google.com; object-src 'self'",
+	"permissions": [ "tabs", "identity" ],
+	"content_security_policy": "script-src 'self' https://www.googleapis.com; object-src 'self'",
 	
 	"oauth2": {
 		"client_id": "285678490171-jje98f1oqbu587msoegirdd7v6qjjtfq.apps.googleusercontent.com",
