@@ -16,7 +16,9 @@ exports.setAuthToken = function(token) {
 //	authToken = token;
 //}
 
-function sendRequest(resource, method, options, callback) {
+function sendRequest(resource, method, options) {
+	var deferred = $.Deferred();
+	
 	if(options===undefined && typeof method === "object") {
 		options = $.extend({}, method);
 		method = undefined;
@@ -30,18 +32,23 @@ function sendRequest(resource, method, options, callback) {
 		type: method,
 		headers: { authorization: "Bearer " + authToken },
 		data: options
-	}).fail(function(xhr,statusCode,errorMessage) {
-		console.error(status + " " + error + " trying to access YouTube Data API");
-	}).done(callback);
+	}).fail(function(jqXHR, textStatus, errorThrown) {
+		console.error(textStatus + " " + errorThrown + " trying to access YouTube Data API");
+		deferred.reject(textStatus, errorThrown);
+	}).done(function(data, textStatus, jqXHR) {
+		deferred.resolve(data);
+	});
+	
+	return deferred.promise();
 }
 
 function YoutubeResource(resource) {
 	this.resource = resource;
 }
-YoutubeResource.prototype.ajax = function(method, options, callback) {
-	sendRequest(this.resource, method, options, callback);
+YoutubeResource.prototype.ajax = function(method, options) {
+	return sendRequest(this.resource, method, options);
 }
-YoutubeResource.prototype.get = function(options, callback) { this.ajax("GET", options, callback); }
-YoutubeResource.prototype.post = function(options, callback) { this.ajax("POST", options, callback); }
-YoutubeResource.prototype.put = function(options, callback) { this.ajax("PUT", options, callback); }
-YoutubeResource.prototype.delete = function(options, callback) { this.ajax("DELETE", options, callback); }
+YoutubeResource.prototype.get    = function(options) { return this.ajax("GET", options); }
+YoutubeResource.prototype.post   = function(options) { return this.ajax("POST", options); }
+YoutubeResource.prototype.put    = function(options) { return this.ajax("PUT", options); }
+YoutubeResource.prototype.delete = function(options) { return this.ajax("DELETE", options); }

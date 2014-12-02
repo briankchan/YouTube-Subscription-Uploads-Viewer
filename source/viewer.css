@@ -11,6 +11,7 @@ body,div,ul,ol,li,h1,h2,h3,h4,h5,h6,input,textarea,p,th,td {
 
 body {
 	font: 13px Arial, sans serif;
+	background: #f8f8f8;
 }
 
 a {
@@ -32,7 +33,7 @@ ul {
 	padding: 5px;
 	
 	background: rgba(255,255,255,.75);
-	border-bottom: 1px solid #ddd;
+	border-bottom: 1px solid #dddddd;
 	
 	z-index: 10;
 }
@@ -44,7 +45,7 @@ ul {
 	height: calc(100% - 50px);
 	
 	background: #f1f1f1;
-	border-right: 1px solid #ddd;
+	border-right: 1px solid #dddddd;
 	font-size: 14px;
 	line-height: 1.5em;
 	overflow: auto;
@@ -54,6 +55,7 @@ ul {
 	white-space: nowrap;
 	text-overflow: ellipsis;
 	overflow: hidden;
+	cursor: pointer;
 }
 
 #content {
@@ -63,8 +65,6 @@ ul {
 	width: calc(100% - 300px);
 	height: calc(100% - 50px);
 	padding: 0 15px;
-	
-	background: #f8f8f8;
 }
 
 #login {
