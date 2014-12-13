@@ -7,7 +7,7 @@ module.exports = function(grunt) {
 			tasks: [ "build" ]
 		},
 		browserify: {
-			js: {
+			minifyify: {
 				src: "source/script/main.js",
 				dest: "source/viewer.js",
 				options: {
@@ -28,6 +28,15 @@ module.exports = function(grunt) {
 						debug: true
 					}
 				}
+			},
+			debug: {
+				src: "source/script/main.js",
+				dest: "source/viewer.js",
+				options: {
+					browserifyOptions: {
+						debug: true
+					}
+				}
 			}
 		}
 	});
@@ -36,6 +45,6 @@ module.exports = function(grunt) {
 	grunt.loadNpmTasks("grunt-contrib-watch");
 	
 	grunt.registerTask("default", [ "build", "watch" ]);
-	grunt.registerTask("build", [ "browserify" ]);
+	grunt.registerTask("build", [ "browserify:debug" ]);
 	
 };
