@@ -14,11 +14,15 @@ exports.authorize = function(interactive) {
 	var deferred = $.Deferred();
 	
 	chrome.identity.getAuthToken({ interactive: interactive }, function(authResult) {
-		if (authResult && !authResult.error) {
-			setAuthToken(authResult);
-			deferred.resolve();
+		if (authResult) {
+			if(!authResult.error) {
+				setAuthToken(authResult);
+				deferred.resolve();
+			} else {
+				deferred.reject(authResult.error);
+			}
 		} else {
-			deferred.reject(authResult.error);
+			deferred.reject();
 		}
 	});
 	
