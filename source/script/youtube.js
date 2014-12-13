@@ -30,14 +30,20 @@ exports.authorize = function(interactive) {
 }
 
 exports.loadSubscriptionsVideos = function() {
-	console.log("getting subs");
 	var deferred = $.Deferred();
 	
-	loadSubscriptions().done(function(response) {
-		handleSubscriptionsResponse(response).done(function() {
-			deferred.resolve(subscriptions);
+	if(subscriptions.length > 0) {
+		$.each(subscriptions, function(id, sub) {
+			loadChannelUploads(id);
 		});
-	});
+		deferred.resolve(subscriptions);
+	} else {
+		loadSubscriptions().done(function(response) {
+			handleSubscriptionsResponse(response).done(function() {
+				deferred.resolve(subscriptions);
+			});
+		});
+	}
 	
 	return deferred.promise();
 };
@@ -136,7 +142,6 @@ function loadChannelUploads(channelId) {
 					video.comments = videoJSON.statistics.commentCount;
 				});
 			});
-			
 		});
 	});
 }
