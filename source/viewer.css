@@ -41,7 +41,7 @@ ul {
 #nav {
 	position: fixed;
 	top: 50px;
-	width: 300px;
+	width: 250px;
 	height: calc(100% - 50px);
 	
 	background: #f1f1f1;
@@ -60,7 +60,7 @@ ul {
 
 #content {
 	position: relative;
-	left: 300px;
+	left: 250px;
 	top: 50px;
 	width: calc(100% - 300px);
 	height: calc(100% - 50px);

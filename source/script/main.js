@@ -17,6 +17,8 @@ $(function() {
 	//log in with UI when button is clicked
 	$("#authorize-button").click(function() { authorize(true); });
 	setTimeout(function() { authorize(false); }, 1); //attempt to log in without UI
+	
+	$("#refresh-button").click(function() { loadSubscriptionsVideos(); });
 });
 
 function authorize(interactive) {
@@ -28,7 +30,7 @@ function authorize(interactive) {
 	});
 }
 
-function loadSubscriptions() {
+function loadSubscriptionsVideos() {
 	console.log("loading subs");
 	Youtube.loadSubscriptionsVideos().done(function(subscriptions) {
 		console.log(subscriptions);
