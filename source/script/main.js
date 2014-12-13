@@ -1,7 +1,13 @@
+/**
+ * Main script for viewer.html that connects everything to the UI
+ */
+
 window.$ = window.jquery = require("jquery");
 
 var htmlLinkify = require("html-linkify");
 var Youtube = window.Youtube = require("./youtube.js");
+
+var currentView;
 
 $(function() {
 	//keep scrolling from bubbling to outer window
@@ -24,7 +30,7 @@ $(function() {
 function authorize(interactive) {
 	Youtube.authorize(interactive).done(function() {
 		$("#authorize-button").css("visibility", "hidden");
-		loadSubscriptions();
+		loadSubscriptionsVideos();
 	}).fail(function() {
 		$("#authorize-button").css("visibility", "");
 	});
@@ -33,18 +39,24 @@ function authorize(interactive) {
 function loadSubscriptionsVideos() {
 	console.log("loading subs");
 	Youtube.loadSubscriptionsVideos().done(function(subscriptions) {
-		console.log(subscriptions);
+		if(localStorage.currentView)
+			displayUploads(localStorage.currentView);
 		$.each(subscriptions, function(id, sub) {
 			$("#subscriptions").append($("<li>").text(sub.name).click(function() {
-				//on click, load uploads for this subscription
-				clearUploads();
-				var uploads = Youtube.getChannelUploads(id);
-				$.each(uploads, function(id, video) {
-					$("#videos").append(createVideoElement(video));
-				})
+				displayUploads(id);
 			}));
 		});
 	});
+}
+
+function displayUploads(id) {
+	localStorage.currentView = currentView = id;
+	clearUploads();
+	$(window).scrollTop(0);
+	var uploads = Youtube.getChannelUploads(id);
+	$.each(uploads, function(id, video) {
+		$("#videos").append(createVideoElement(video));
+	})
 }
 
 function clearUploads() {
