@@ -1,3 +1,7 @@
+/**
+ * A bunch of wrappers for jQuery's ajax function for use with the YoutTube Data API.
+ */
+
 var API_KEY = "AIzaSyClOj2RmQTkYbfqL4o8mBhzx8Jwo-mNhpo";
 var URL = "https://www.googleapis.com/youtube/v3/";
 
@@ -12,20 +16,11 @@ exports.setAuthToken = function(token) {
 	authToken = token;
 }
 
-//function setAuthToken(token) {
-//	authToken = token;
-//}
-
 function sendRequest(resource, method, options) {
 	var deferred = $.Deferred();
 	
-	if(options===undefined && typeof method === "object") {
-		options = $.extend({}, method);
-		method = undefined;
-	} else {
-		options = $.extend({}, options);
-	}
-	options.key = API_KEY;
+	options = $.extend({}, options);
+	//options.key = API_KEY;
 	
 	$.ajax({
 		url: URL + resource,
