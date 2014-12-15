@@ -130,8 +130,6 @@ function loadChannelUploads(channelId) {
 				$.each(videoJSON.items, function(i, videoJSON) {
 					var video = subscription.videos[videoJSON.id];
 					
-					video.uploader = subscription.name;
-					video.uploaderThumb = subscription.thumb;
 					video.title = videoJSON.snippet.title;
 					video.desc = videoJSON.snippet.description;
 					video.thumb = videoJSON.snippet.thumbnails.medium.url;
@@ -146,6 +144,14 @@ function loadChannelUploads(channelId) {
 		});
 	});
 }
+exports.getChannelName = function(channelId) {
+	return subscriptions[channelId].name;
+};
+
+exports.getChannelThumb = function(channelId) {
+	return subscriptions[channelId].thumb;
+};
+
 
 exports.getChannelUploads = function(channelId) {
 	return subscriptions[channelId].videos;

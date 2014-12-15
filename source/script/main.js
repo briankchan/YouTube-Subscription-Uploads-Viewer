@@ -57,8 +57,10 @@ function displayUploads(id) {
 	clearUploads();
 	$(window).scrollTop(0);
 	var uploads = Youtube.getChannelUploads(id);
+	var thumb = Youtube.getChannelThumb(id);
+	var name = Youtube.getChannelName(id);
 	$.each(uploads, function(id, video) {
-		$("#videos").append(createVideoElement(video));
+		$("#videos").append(createVideoElement(video, id, name, thumb));
 	})
 }
 
@@ -71,20 +73,20 @@ function clearUploads() {
  * @param {Object (video)} video video that list item will represent
  * @returns {jQuery} list item that was created
  */
-function createVideoElement(video) {
+function createVideoElement(video, id, uploaderName, uploaderThumb) {
 	return $("<li>")
 			.append($("<div>", { "class": "vid" })
 				.append($("<div>", { "class": "vidUploader" })
-					.append($("<a>", { "href": "https://www.youtube.com/watch?v="+video.id, "target": "_blank" })
-						.append($("<img>", { "src": video.uploaderThumb, "width": "20", "class": "vidUploaderImg" }))
-						.append($("<span>").text(video.uploader)))
+					.append($("<a>", { "href": "https://www.youtube.com/watch?v="+id, "target": "_blank" })
+						.append($("<img>", { "src": uploaderThumb, "width": "20", "class": "vidUploaderImg" }))
+						.append($("<span>").text(uploaderName)))
 				).append($("<div>", { "class": "vidContent" })
 					.append($("<div>", { "class": "vidImg" })
-						.append($("<a>", { "href": "https://www.youtube.com/watch?v="+video.id, "target": "_blank" })
+						.append($("<a>", { "href": "https://www.youtube.com/watch?v="+id, "target": "_blank" })
 							.append($("<img>", { "src": video.thumb, "width": "240" }))
 						)
 					).append($("<div>", { "class": "vidText" })
-						.append($("<a>", { "href": "https://www.youtube.com/watch?v="+video.id, "target": "_blank" })
+						.append($("<a>", { "href": "https://www.youtube.com/watch?v="+id, "target": "_blank" })
 							.append($("<div>", { "class": "vidTitle" }).text(video.title))
 						).append($("<div>", { "class": "vidTime" }).text(new Date(video.time).toLocaleString()))
 							.append($("<div>", { "class": "vidDesc" }).html(linkify(video.desc.replace(/\n/g, "<br />"))))
