@@ -1,20 +1,20 @@
 {
 	"manifest_version": 2,
 	"name": "YouTube Subscription Uploads Viewer",
-	"icons": { "16": "icon.png" },
 	"description": "A better way to view the latest videos from your YouTube subscriptions.",
+	"icons": {
+		"16": "icon.png"
+	},
+	"version": "0.0.1",
 	
 	"background": {
 		"scripts": ["background.js"]
 	},
-	"permissions": [ "tabs", "identity" ],
 	
+	"browser_action": { "default_icon": "icon.png" },
+	"permissions": ["tabs", "identity", "storage"],
 	"oauth2": {
 		"client_id": "285678490171-jje98f1oqbu587msoegirdd7v6qjjtfq.apps.googleusercontent.com",
 		"scopes": ["https://www.googleapis.com/auth/youtube.readonly"]
-	},
-	
-	"browser_action": { "default_icon": "icon.png" },
-	
-	"version": "0.0.1"
+	}
 }

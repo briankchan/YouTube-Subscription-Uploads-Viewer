@@ -21,13 +21,16 @@ $(function() {
 	});
 	
 	//log in with UI when button is clicked
-	$("#authorize-button").click(function() { authorize(true); });
-	setTimeout(function() { authorize(false); }, 1); //attempt to log in without UI
+	$("#authorize-button").click(function() { authorizeAndLoad(true); });
+	setTimeout(function() { authorizeAndLoad(false); }, 1); //attempt to log in without UI
 	
 	$("#refresh-button").click(function() { loadSubscriptionsVideos(); });
+	
+	
+	$("#reload-extension-button").click(function() { chrome.runtime.reload(); });
 });
 
-function authorize(interactive) {
+function authorizeAndLoad(interactive) {
 	Youtube.authorize(interactive).done(function() {
 		$("#authorize-button").css("visibility", "hidden");
 		loadSubscriptionsVideos();

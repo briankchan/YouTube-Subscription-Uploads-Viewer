@@ -1,10 +1,11 @@
 /**
  * A wrapper for YouTube's data API and Chrome's Identity API.
+ * authorize() needs to be called before anything else can be used.
  */
 
-var YoutubeApi = require("./youtube-api.js")
+var YoutubeApi = require("./youtube-api.js");
 
-var subscriptions = exports.subscriptions = {};
+var subscriptions = exports.subscriptions = {}; //TODO: stop exporting this (debug code)
 
 function setAuthToken(authResult) {
 	YoutubeApi.setAuthToken(authResult);
@@ -27,7 +28,7 @@ exports.authorize = function(interactive) {
 	});
 	
 	return deferred.promise();
-}
+};
 
 exports.loadSubscriptionsVideos = function() {
 	var deferred = $.Deferred();
