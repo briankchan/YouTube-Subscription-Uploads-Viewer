@@ -4,8 +4,9 @@
 
 window.$ = window.jquery = require("jquery");
 
-var htmlLinkify = require("html-linkify");
+var HtmlLinkify = require("html-linkify");
 var Youtube = window.Youtube = require("./youtube.js");
+var VideoManager = require("./video-object-manager.js");
 
 var currentView;
 
@@ -24,7 +25,7 @@ $(function() {
 	$("#authorize-button").click(function() { authorizeAndLoad(true); });
 	setTimeout(function() { authorizeAndLoad(false); }, 1); //attempt to log in without UI
 	
-	$("#refresh-button").click(function() { loadSubscriptionsVideos(); });
+	$("#refresh-button").click(function() { loadSubscriptionsUploads(); });
 	
 	
 	$("#reload-extension-button").click(function() { chrome.runtime.reload(); });
@@ -33,16 +34,16 @@ $(function() {
 function authorizeAndLoad(interactive) {
 	Youtube.authorize(interactive).done(function() {
 		$("#authorize-button").css("visibility", "hidden");
-		loadSubscriptionsVideos();
+		loadSubscriptionsUploads();
 	}).fail(function() {
 		$("#authorize-button").css("visibility", "");
 	});
 }
 
-function loadSubscriptionsVideos() {
-	console.log("loading subs");
-	Youtube.loadSubscriptionsVideos().done(function(subscriptions) {
-		if(localStorage.currentView)
+function loadSubscriptionsUploads() {
+	console.log("loading subs"); //TODO remove debug code
+	Youtube.saveSubscriptionsUploads().done(function(subscriptions) {
+		if (localStorage.currentView)
 			displayUploads(localStorage.currentView);
 		$.each(subscriptions, function(id, sub) {
 			$("#subscriptions").append($("<li>").text(sub.name).click(function() {
@@ -53,15 +54,18 @@ function loadSubscriptionsVideos() {
 }
 
 function displayUploads(id) {
-	localStorage.currentView = currentView = id;
-	clearUploads();
-	$(window).scrollTop(0);
-	var uploads = Youtube.getChannelUploads(id);
-	var thumb = Youtube.getChannelThumb(id);
-	var name = Youtube.getChannelName(id);
-	$.each(uploads, function(id, video) {
-		$("#videos").append(createVideoElement(video, id, name, thumb));
-	})
+	if (Youtube.isChannelLoaded(id)) {
+		var uploads = Youtube.getChannelUploads(id);
+		var thumb = Youtube.getChannelThumb(id);
+		var name = Youtube.getChannelName(id);
+		
+		clearUploads();
+		$(window).scrollTop(0);
+		$.each(uploads, function(id, video) {
+			$("#videos").append(createVideoElement(video, id, name, thumb));
+		});
+		localStorage.currentView = currentView = id;
+	} else console.error(id + " is not a valid loaded channel ID.");
 }
 
 function clearUploads() {
@@ -75,21 +79,21 @@ function clearUploads() {
  */
 function createVideoElement(video, id, uploaderName, uploaderThumb) {
 	return $("<li>")
-			.append($("<div>", { "class": "vid" })
-				.append($("<div>", { "class": "vidUploader" })
-					.append($("<a>", { "href": "https://www.youtube.com/watch?v="+id, "target": "_blank" })
-						.append($("<img>", { "src": uploaderThumb, "width": "20", "class": "vidUploaderImg" }))
-						.append($("<span>").text(uploaderName)))
-				).append($("<div>", { "class": "vidContent" })
-					.append($("<div>", { "class": "vidImg" })
-						.append($("<a>", { "href": "https://www.youtube.com/watch?v="+id, "target": "_blank" })
-							.append($("<img>", { "src": video.thumb, "width": "240" }))
+			.append($("<div>", { class: "vid" })
+				.append($("<div>", { class: "vidUploader" })
+					.append($("<a>", { href: "https://www.youtube.com/watch?v="+id, target: "_blank" })
+						.append($("<img>", { src: uploaderThumb, width: "20", class: "vidUploaderImg" }))
+						.append($("<span>", { class: "vidUploaderName"}).text(uploaderName)))
+				).append($("<div>", { class: "vidContent" })
+					.append($("<div>", { class: "vidImg" })
+						.append($("<a>", { href: "https://www.youtube.com/watch?v="+id, target: "_blank" })
+							.append($("<img>", { src: VideoManager.getThumbnail(video), width: "240" }))
 						)
-					).append($("<div>", { "class": "vidText" })
-						.append($("<a>", { "href": "https://www.youtube.com/watch?v="+id, "target": "_blank" })
-							.append($("<div>", { "class": "vidTitle" }).text(video.title))
-						).append($("<div>", { "class": "vidTime" }).text(new Date(video.time).toLocaleString()))
-							.append($("<div>", { "class": "vidDesc" }).html(linkify(video.desc.replace(/\n/g, "<br />"))))
+					).append($("<div>", { class: "vidText" })
+						.append($("<a>", { href: "https://www.youtube.com/watch?v="+id, target: "_blank" })
+							.append($("<div>", { class: "vidTitle" }).text(VideoManager.getTitle(video)))
+						).append($("<div>", { class: "vidTime" }).text(VideoManager.getUploadTime(video).toLocaleString()))
+							.append($("<div>", { class: "vidDesc" }).html(linkify(VideoManager.getDescription(video).replace(/\n/g, "<br />"))))
 								//replace line breaks with <br> tags; convert URLs to links
 					)
 				)
@@ -97,5 +101,5 @@ function createVideoElement(video, id, uploaderName, uploaderThumb) {
 }
 
 function linkify(text) {
-	return htmlLinkify(text, { escape: false });
+	return HtmlLinkify(text, { escape: false });
 }

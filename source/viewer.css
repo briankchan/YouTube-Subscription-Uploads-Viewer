@@ -79,6 +79,7 @@ ul {
 
 .vidUploader {
 	padding: 5px 10px;
+	height: 30px;
 	
 	background: lightblue;
 	font-size: 15px;
@@ -94,7 +95,10 @@ ul {
 }
 .vidUploaderImg {
 	margin-right: 10px;
-	vertical-align: text-bottom;
+	vertical-align: middle;
+}
+.vidUploaderName {
+	vertical-align: middle;
 }
 
 .vidContent {
@@ -104,6 +108,8 @@ ul {
 
 .vidImg {
 	float: left;
+	width: 240px;
+	height: 135px;
 }
 
 .vidText {
