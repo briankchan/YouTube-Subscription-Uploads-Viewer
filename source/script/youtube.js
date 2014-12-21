@@ -27,23 +27,22 @@ exports.authorize = function(interactive) {
 	return deferred.promise();
 };
 
-exports.saveSubscriptionsUploads = function() {
+exports.loadSubscriptionsUploads = function() {
 	var deferred = $.Deferred();
 	
-	if(subscriptions.length > 0) {
-		var promises = [];
-		$.each(subscriptions, function(id, sub) {
-			promises.push(saveChannelUploads(id));
-		});
-		$.when.apply($, promises).done(function() {
-			deferred.resolve(subscriptions);
-		})
-	} else {
+	if($.isEmptyObject(subscriptions)) {
 		getSubscriptionsApiCall().done(function(response) {
 			handleSubscriptionsResponse(response).done(function() {
 				deferred.resolve(subscriptions);
 			});
 		});
+	} else {
+		var promises = $.map(subscriptions, function(sub, id) {
+			return loadChannelUploads(id);
+		});
+		$.when.apply($, promises).done(function() {
+			deferred.resolve(subscriptions);
+		})
 	}
 	
 	return deferred.promise();
@@ -51,38 +50,44 @@ exports.saveSubscriptionsUploads = function() {
 
 function getSubscriptionsApiCall() {
 	return YoutubeApi.subscriptions.get({
-		"mine": true,
-		"part": "id,snippet",
-		"fields": "nextPageToken,items(snippet(title,resourceId/channelId,thumbnails))",
-		"maxResults": 50,
-		"order": "alphabetical"
+		mine: true,
+		part: "id,snippet",
+		fields: "nextPageToken,items(snippet(title,resourceId/channelId,thumbnails))",
+		maxResults: 50,
+		order: "alphabetical"
 	});
 }
 
 function handleSubscriptionsResponse(response) {
-	var loadUploadsPromise = saveChannelsUploads(response);
-	
-	var loadSubscriptionsPromise;
-	if (response.nextPageToken) {
-		getSubscriptionsNextPageApiCall(response.nextPageToken).done(function(nextResponse) {
-			loadSubscriptionsPromise = handleSubscriptionsResponse(nextResponse);
-		});
-	}
-	
-	return $.when(loadUploadsPromise, loadSubscriptionsPromise);
-}
-
-function saveChannelsUploads(response) {
-	var promises = [];
+	var channelIds = [];
 	$.each(response.items, function(i, sub) {
 		var id = sub.snippet.resourceId.channelId;
-		
+		channelIds.push(id);
 		subscriptions[id] = {
 			name: sub.snippet.title,
-			thumb: sub.snippet.thumbnails.default.url
+			thumb: sub.snippet.thumbnails.default.url,
+			uploads: {}
 		};
-		
-		promises.push(saveChannelUploads(id));
+	});
+	var loadUploadsPromise = loadChannelsUploads(channelIds);
+	
+	var loadSubscriptionsDeferred = $.Deferred();
+	if (response.nextPageToken) {
+		getSubscriptionsNextPageApiCall(response.nextPageToken).done(function(nextResponse) {
+			var a = handleSubscriptionsResponse(nextResponse).done(function() {
+				loadSubscriptionsDeferred.resolve();
+			});
+		});
+	} else {
+		loadSubscriptionsDeferred.resolve();
+	}
+	
+	return $.when(loadUploadsPromise, loadSubscriptionsDeferred.promise());
+}
+
+function loadChannelsUploads(channelIds) {
+	var promises = $.map(channelIds, function(id, i) {
+		return loadChannelUploads(id);
 	});
 	return $.when.apply($, promises);
 }
@@ -94,57 +99,73 @@ function getSubscriptionsNextPageApiCall(nextPageToken) {
 		fields: "nextPageToken,items(snippet(title,resourceId/channelId,thumbnails))",
 		maxResults: 50,
 		order: "alphabetical",
-		"pageToken": nextPageToken
+		pageToken: nextPageToken
 	});
 }
 
-function saveChannelUploads(channelId) {
+function loadChannelUploads(channelId) {
 	var deferred = $.Deferred();
 	
 	var channel = subscriptions[channelId];
 	
-	//if uploads playlist id is not saved, get/save it first
-	var playlistIdDeferred = (channel.uploadsPlaylist
-			? $.Deferred().resolve().promise()
-			: getChannelUploadsPlaylistApiCall(channelId).done(function(channelJSON) {
-					channel.uploadsPlaylist = channelJSON.items[0].contentDetails.relatedPlaylists.uploads;
-				})
-	);
-	
-	playlistIdDeferred.done(function() {
-		getPlaylistVideos(channel.uploadsPlaylist).done(function(videos) {
-			channel.uploads = videos;
-			deferred.resolve();
+	loadChannelUploadsPlaylistId(channelId).done(function() {
+		getPlaylistVideoIds(channel.uploadsPlaylist).done(function(videoIds) {
+			loadChannelUploadsFromVideoIds(channel, videoIds).done(function() {
+				deferred.resolve();
+			});
 		});
 	});
 	
 	return deferred.promise();
 }
 
+function loadChannelUploadsPlaylistId(channelId) {
+	var channel = subscriptions[channelId];
+	
+	//if uploads playlist id is not saved, get and save it; else, we're already done
+	return channel.uploadsPlaylist ?
+			$.Deferred().resolve().promise() :
+			getChannelUploadsPlaylistApiCall(channelId).done(function(response) {
+				channel.uploadsPlaylist = response.items[0].contentDetails.relatedPlaylists.uploads;
+			});
+}
+
 function getChannelUploadsPlaylistApiCall(channelId) {
 	return YoutubeApi.channels.get({
-		"id": channelId,
-		"part": "contentDetails",
-		"fields": "items/contentDetails/relatedPlaylists/uploads"
+		id: channelId,
+		part: "contentDetails",
+		fields: "items/contentDetails/relatedPlaylists/uploads"
 	});
 }
 
-function getPlaylistVideos(playlistId) {
+function getPlaylistVideoIds(playlistId) {
 	var deferred = $.Deferred();
 	
-	getPlaylistItemsApiCall(playlistId).done(function(playlistVideosJSON) {
-		//save IDs of videos
-		var videoIds = "";
-		$.each(playlistVideosJSON.items, function(i, video) {
-			videoIds += video.contentDetails.videoId + ",";
+	getPlaylistItemsApiCall(playlistId).done(function(response) {
+		var videoIds = $.map(response.items, function(video, i) {
+			return video.contentDetails.videoId;
 		});
-		//cut out last comma
-		videoIds = videoIds.slice(0, -1);
 		
-		getVideoDetailsApiCall(videoIds).done(function(videoJSON) {
-			var videos = {};
-			
-			$.each(videoJSON.items, function(i, videoJSON) {
+		deferred.resolve(videoIds);
+	});
+	
+	return deferred;
+}
+
+function loadChannelUploadsFromVideoIds(channel, videoIds) {
+	var deferred = $.Deferred();
+	
+	var videoIdsString = "";
+	$.each(videoIds, function(i, id) {
+		if(!channel.uploads[id])
+			videoIdsString += id + ",";
+	});
+	//cut out last comma
+	videoIdsString = videoIdsString.slice(0, -1);
+	
+	if(videoIdsString != "") {
+		getVideoDetailsApiCall(videoIdsString).done(function(response) {
+			$.each(response.items, function(i, videoJSON) {
 				var video = VideoManager.createNewVideo();
 				VideoManager.setTitle(video, videoJSON.snippet.title);
 				VideoManager.setDescription(video, videoJSON.snippet.description);
@@ -156,37 +177,39 @@ function getPlaylistVideos(playlistId) {
 				VideoManager.setDislikesCount(video, parseInt(videoJSON.statistics.dislikeCount));
 				VideoManager.setCommentsCount(video, parseInt(videoJSON.statistics.commentCount));
 				
-				videos[videoJSON.id] = video;
+				channel.uploads[videoJSON.id] = video;
 			});
 			
-			deferred.resolve(videos);
+			deferred.resolve();
 		});
-	});
+	} else {
+		deferred.resolve();
+	}
 	
 	return deferred.promise();
 }
 
 function getPlaylistItemsApiCall(playlistId) {
 	return YoutubeApi.playlistItems.get({
-		"playlistId": playlistId,
-		"part": "contentDetails",
-		"fields": "items/contentDetails/videoId",
-		"maxResults": 50
+		playlistId: playlistId,
+		part: "contentDetails",
+		fields: "items/contentDetails/videoId",
+		maxResults: 50
 	});
 }
 
 function getVideoDetailsApiCall(videoIds) {
 	return YoutubeApi.videos.get({
-		"id": videoIds,
-		"part": "id,snippet,contentDetails,statistics",
-		"fields": "items(id,snippet(publishedAt,title,description,thumbnails/medium/url),contentDetails/duration,statistics(viewCount,likeCount,dislikeCount,commentCount))",
-		"maxResults": 50
+		id: videoIds,
+		part: "id,snippet,contentDetails,statistics",
+		fields: "items(id,snippet(publishedAt,title,description,thumbnails/medium/url),contentDetails/duration,statistics(viewCount,likeCount,dislikeCount,commentCount))",
+		maxResults: 50
 	});
 }
 
 exports.isChannelLoaded = function(channelId) {
 	return subscriptions[channelId] != undefined;
-}
+};
 
 exports.getChannelName = function(channelId) {
 	return subscriptions[channelId].name;

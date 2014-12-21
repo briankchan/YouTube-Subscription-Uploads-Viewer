@@ -42,7 +42,7 @@ function authorizeAndLoad(interactive) {
 
 function loadSubscriptionsUploads() {
 	console.log("loading subs"); //TODO remove debug code
-	Youtube.saveSubscriptionsUploads().done(function(subscriptions) {
+	Youtube.loadSubscriptionsUploads().done(function(subscriptions) {
 		if (localStorage.currentView)
 			displayUploads(localStorage.currentView);
 		$.each(subscriptions, function(id, sub) {
