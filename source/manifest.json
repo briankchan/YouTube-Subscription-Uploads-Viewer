@@ -12,7 +12,8 @@
 	},
 	
 	"browser_action": { "default_icon": "icon.png" },
-	"permissions": ["tabs", "identity", "storage"],
+	"permissions": ["identity", "storage", "unlimitedStorage"],
+	"optional_permissions": ["background"],
 	"oauth2": {
 		"client_id": "285678490171-jje98f1oqbu587msoegirdd7v6qjjtfq.apps.googleusercontent.com",
 		"scopes": ["https://www.googleapis.com/auth/youtube.readonly"]
