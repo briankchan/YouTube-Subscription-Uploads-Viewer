@@ -3,21 +3,13 @@
  * Would be the video object itself if Chrome allowed saving of non-vanilla JavaScript objects.
  */
 
-var LZString = window.LZString = require("lz-string");
-
 exports.createNewVideo = function() { return []; };
 
 exports.getTitle = function(video) { return video[0]; }; 
 exports.setTitle = function(video, title) { video[0] = title; };
 
-exports.getDescription = function(video) {
-	return video[1];
-	//return LZString.decompress(video[1]);
-};
-exports.setDescription = function(video, desc) {
-	video[1]=desc;
-	//video[1]=LZString.compress(desc);
-};
+exports.getDescription = function(video) { return video[1]; };
+exports.setDescription = function(video, desc) { video[1]=desc; };
 
 exports.getThumbnail = function(video) { return video[2]; };
 exports.setThumbnail = function(video, thumb) { video[2] = thumb; };
