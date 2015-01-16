@@ -170,7 +170,7 @@ function loadChannelUploadsFromVideoIds(channel, videoIds) {
 				VideoManager.setTitle(video, videoJSON.snippet.title);
 				VideoManager.setDescription(video, videoJSON.snippet.description);
 				VideoManager.setThumbnail(video, videoJSON.snippet.thumbnails.medium.url);
-				VideoManager.setUploadTime(video, new Date(videoJSON.snippet.publishedAt));
+				VideoManager.setUploadTime(video, videoJSON.snippet.publishedAt);
 				VideoManager.setDuration(video, videoJSON.contentDetails.duration);
 				VideoManager.setViewCount(video, parseInt(videoJSON.statistics.viewCount));
 				VideoManager.setLikesCount(video, parseInt(videoJSON.statistics.likeCount));

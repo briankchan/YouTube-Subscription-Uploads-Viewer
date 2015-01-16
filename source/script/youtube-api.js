@@ -1,6 +1,6 @@
 /**
  * A bunch of wrappers for jQuery's ajax function for use with the YoutTube Data API.
- * Authentication token needs to be set usnig setAuthToken before functions can be used.
+ * Authentication token needs to be set using setAuthToken before functions can be used.
  */
 
 var API_KEY = "AIzaSyClOj2RmQTkYbfqL4o8mBhzx8Jwo-mNhpo"; //not actually needed with auth tokens

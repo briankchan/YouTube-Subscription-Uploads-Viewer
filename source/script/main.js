@@ -12,7 +12,7 @@ var currentView;
 
 $(function() {
 	//keep scrolling from bubbling to outer window
-	$('#nav').bind('mousewheel', function(e) {
+	$('#nav').bind('mousewheel', function(e) {//TODO: move all event handlers to another module?
 		var t = $(this);
 		if (e.originalEvent.wheelDelta > 0 && t.scrollTop() == 0) {
 			e.preventDefault();
@@ -77,7 +77,7 @@ function clearUploads() {
  * @param {Object (video)} video video that list item will represent
  * @returns {jQuery} list item that was created
  */
-function createVideoElement(video, id, uploaderName, uploaderThumb) {
+function createVideoElement(video, id, uploaderName, uploaderThumb) {//TODO: move to new file
 	return $("<li>")
 			.append($("<div>", { class: "vid" })
 				.append($("<div>", { class: "vidUploader" })
@@ -92,7 +92,7 @@ function createVideoElement(video, id, uploaderName, uploaderThumb) {
 					).append($("<div>", { class: "vidText" })
 						.append($("<a>", { href: "https://www.youtube.com/watch?v="+id, target: "_blank" })
 							.append($("<div>", { class: "vidTitle" }).text(VideoManager.getTitle(video)))
-						).append($("<div>", { class: "vidTime" }).text(VideoManager.getUploadTime(video).toLocaleString()))
+						).append($("<div>", { class: "vidTime" }).text(new Date(VideoManager.getUploadTime(video)).toLocaleString()))
 							.append($("<div>", { class: "vidDesc" }).html(linkify(VideoManager.getDescription(video).replace(/\n/g, "<br />"))))
 								//replace line breaks with <br> tags; convert URLs to links
 					)
