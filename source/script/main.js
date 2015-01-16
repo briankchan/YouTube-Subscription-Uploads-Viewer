@@ -7,6 +7,7 @@ window.$ = window.jquery = require("jquery");
 var HtmlLinkify = require("html-linkify");
 var Youtube = window.Youtube = require("./youtube.js");
 var VideoManager = require("./video-object-manager.js");
+var Storage = require("./storage.js");
 
 var currentView;
 
@@ -19,6 +20,10 @@ $(function() {
 		} else if (e.originalEvent.wheelDelta < 0 && (t.scrollTop() == t.get(0).scrollHeight - t.innerHeight())) {
 			e.preventDefault();
 		}
+	});
+	
+	Storage.get("subscriptions").done(function(storage) {
+		Youtube.setSubscriptions((typeof storage.subscriptions === "object") ? storage.subscriptions : {});
 	});
 	
 	//log in with UI when button is clicked
@@ -42,7 +47,11 @@ function authorizeAndLoad(interactive) {
 
 function loadSubscriptionsUploads() {
 	console.log("loading subs"); //TODO remove debug code
+	var start = new Date();
 	Youtube.loadSubscriptionsUploads().done(function(subscriptions) {
+		var elapsed = new Date()-start;
+		console.log(elapsed + "ms");
+		
 		if (localStorage.currentView)
 			displayUploads(localStorage.currentView);
 		$.each(subscriptions, function(id, sub) {
@@ -50,6 +59,8 @@ function loadSubscriptionsUploads() {
 				displayUploads(id);
 			}));
 		});
+		
+		Storage.set("subscriptions", subscriptions);
 	});
 }
 
