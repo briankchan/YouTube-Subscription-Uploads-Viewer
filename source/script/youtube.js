@@ -40,11 +40,25 @@ exports.loadSubscriptionsUploads = function() {
 	
 	subscriptionsInitDeferred.done(function() {
 		if ($.isEmptyObject(subscriptions)) { //should only be true on first run
-			getSubscriptionsApiCall().done(function(response) {
-				loadSubscriptionsPageUploadsAndGetNextPage(response).done(function() {
+			var promises = [];
+			getSubscriptions().progress(function(items) {
+				var channelIds = [];
+				$.each(items, function(i, sub) {
+					var id = sub.snippet.resourceId.channelId;
+					channelIds.push(id);
+					subscriptions[id] = {
+						name: sub.snippet.title,
+						thumb: sub.snippet.thumbnails.default.url,
+						uploads: {}
+					};
+				});
+				promises.push(loadChannelsUploads(channelIds));
+			}).done(function() {
+				$.when.apply($, promises).done(function() {
 					deferred.resolve(subscriptions);
 				});
 			});
+			
 		} else {
 			var promises = $.map(subscriptions, function(sub, id) {
 				return loadChannelUploads(id);
@@ -58,6 +72,25 @@ exports.loadSubscriptionsUploads = function() {
 	return deferred.promise();
 };
 
+function getSubscriptions() {
+	var deferred = $.Deferred();
+	
+	getSubscriptionsApiCall().done(function(response) {
+		getSubscriptionsHelper(deferred, response);
+	});
+	
+	return deferred.promise();
+}
+
+function getSubscriptionsHelper(deferred, response) {
+	deferred.notify(response.items);
+	if(response.nextPageToken)
+		getSubscriptionsNextPageApiCall(response.nextPageToken).done(function(newResponse) {
+			getSubscriptionsHelper(deferred, newResponse);
+		});
+	else deferred.resolve();
+}
+
 function getSubscriptionsApiCall() {
 	return YoutubeApi.subscriptions.get({
 		mine: true,
@@ -66,33 +99,6 @@ function getSubscriptionsApiCall() {
 		maxResults: 50,
 		order: "alphabetical"
 	});
-}
-
-function loadSubscriptionsPageUploadsAndGetNextPage(response) {//TODO split into two functions
-	var channelIds = [];
-	$.each(response.items, function(i, sub) {
-		var id = sub.snippet.resourceId.channelId;
-		channelIds.push(id);
-		subscriptions[id] = {
-			name: sub.snippet.title,
-			thumb: sub.snippet.thumbnails.default.url,
-			uploads: {}
-		};
-	});
-	var loadUploadsPromise = loadChannelsUploads(channelIds);
-	
-	var loadSubscriptionsDeferred = $.Deferred();
-	if (response.nextPageToken) {
-		getSubscriptionsNextPageApiCall(response.nextPageToken).done(function(nextResponse) {
-			loadSubscriptionsPageUploadsAndGetNextPage(nextResponse).done(function() {
-				loadSubscriptionsDeferred.resolve();
-			});
-		});
-	} else {
-		loadSubscriptionsDeferred.resolve();
-	}
-	
-	return $.when(loadUploadsPromise, loadSubscriptionsDeferred.promise());
 }
 
 function loadChannelsUploads(channelIds) {
