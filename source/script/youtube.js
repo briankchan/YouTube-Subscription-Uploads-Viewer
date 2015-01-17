@@ -39,34 +39,25 @@ exports.loadSubscriptionsUploads = function() {
 	var deferred = $.Deferred();
 	
 	subscriptionsInitDeferred.done(function() {
+		var promises;
+		var getSubscriptionsPromise;
 		if ($.isEmptyObject(subscriptions)) { //should only be true on first run
-			var promises = [];
-			getSubscriptions().progress(function(items) {
-				var channelIds = [];
-				$.each(items, function(i, sub) {
-					var id = sub.snippet.resourceId.channelId;
-					channelIds.push(id);
-					subscriptions[id] = {
-						name: sub.snippet.title,
-						thumb: sub.snippet.thumbnails.default.url,
-						uploads: {}
-					};
-				});
-				promises.push(loadChannelsUploads(channelIds));
-			}).done(function() {
-				$.when.apply($, promises).done(function() {
-					deferred.resolve(subscriptions);
-				});
-			});
-			
+			promises = [];
+			getSubscriptionsPromise = getSubscriptions().progress(function(responseItems) {
+				promises.push(loadChannelsUploads(responseItems));
+			})
 		} else {
-			var promises = $.map(subscriptions, function(sub, id) {
+			getSubscriptionsPromise = $.Deferred().resolve().promise();
+			promises = $.map(subscriptions, function(sub, id) {
 				return loadChannelUploads(id);
 			});
+		}
+		
+		getSubscriptionsPromise.done(function() {
 			$.when.apply($, promises).done(function() {
 				deferred.resolve(subscriptions);
-			})
-		}
+			});
+		});
 	});
 	
 	return deferred.promise();
@@ -101,13 +92,6 @@ function getSubscriptionsApiCall() {
 	});
 }
 
-function loadChannelsUploads(channelIds) {
-	var promises = $.map(channelIds, function(id, i) {
-		return loadChannelUploads(id);
-	});
-	return $.when.apply($, promises);
-}
-
 function getSubscriptionsNextPageApiCall(nextPageToken) {
 	return YoutubeApi.subscriptions.get({
 		mine: true,
@@ -117,6 +101,22 @@ function getSubscriptionsNextPageApiCall(nextPageToken) {
 		order: "alphabetical",
 		pageToken: nextPageToken
 	});
+}
+
+function loadChannelsUploads(responseItemsJSON) {
+	var loadChannelUploadsPromises = [];
+	$.each(responseItemsJSON, function(i, sub) {
+		var id = sub.snippet.resourceId.channelId;
+		
+		subscriptions[id] = {
+			name: sub.snippet.title,
+			thumb: sub.snippet.thumbnails.default.url,
+			uploads: {}
+		};
+		
+		loadChannelUploadsPromises.push(loadChannelUploads(id));
+	});
+	return $.when.apply($, loadChannelUploadsPromises);
 }
 
 function loadChannelUploads(channelId) {
