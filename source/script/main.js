@@ -66,51 +66,69 @@ function loadSubscriptionsUploads() {
 
 function displayUploads(id) {
 	if (Youtube.isChannelLoaded(id)) {
-		var uploads = Youtube.getChannelUploads(id);
+		var uploads = getChronologicalOrder(Youtube.getChannelUploads(id));
 		var thumb = Youtube.getChannelThumb(id);
 		var name = Youtube.getChannelName(id);
 		
-		clearUploads();
+		clearVideosPanel();
 		$(window).scrollTop(0);
-		$.each(uploads, function(id, video) {
-			$("#videos").append(createVideoElement(video, id, name, thumb));
+		$.each(uploads, function(i, video) {
+			$("#videos").append($("<li>").append(createVideoElement(video, name, thumb)));
 		});
 		localStorage.currentView = currentView = id;
 	} else console.error(id + " is not a valid loaded channel ID.");
 }
 
-function clearUploads() {
+function clearVideosPanel() {
 	$("#videos").empty();
 }
 
-/**
- * creates html list item to represent given video object
- * @param {Object (video)} video video that list item will represent
- * @returns {jQuery} list item that was created
- */
-function createVideoElement(video, id, uploaderName, uploaderThumb) {//TODO: move to new file
-	return $("<li>")
-			.append($("<div>", { class: "vid" })
-				.append($("<div>", { class: "vidUploader" })
-					.append($("<a>", { href: "https://www.youtube.com/watch?v="+id, target: "_blank" })
-						.append($("<img>", { src: uploaderThumb, width: "20", class: "vidUploaderImg" }))
-						.append($("<span>", { class: "vidUploaderName"}).text(uploaderName)))
-				).append($("<div>", { class: "vidContent" })
-					.append($("<div>", { class: "vidImg" })
-						.append($("<a>", { href: "https://www.youtube.com/watch?v="+id, target: "_blank" })
-							.append($("<img>", { src: VideoManager.getThumbnail(video), width: "240" }))
-						)
-					).append($("<div>", { class: "vidText" })
-						.append($("<a>", { href: "https://www.youtube.com/watch?v="+id, target: "_blank" })
-							.append($("<div>", { class: "vidTitle" }).text(VideoManager.getTitle(video)))
-						).append($("<div>", { class: "vidTime" }).text(new Date(VideoManager.getUploadTime(video)).toLocaleString()))
-							.append($("<div>", { class: "vidDesc" }).html(linkify(VideoManager.getDescription(video).replace(/\n/g, "<br />"))))
-								//replace line breaks with <br> tags; convert URLs to links
-					)
+function createVideoElement(video, uploaderName, uploaderThumb) {//TODO: move to new file
+	var id = VideoManager.getId(video);
+	
+	var videoElement = $("<div>", { class: "vid" });
+	var clickEvent = function() {
+		VideoManager.setWatched(video, true);
+		videoElement.addClass("watched");
+	};
+	if (VideoManager.getWatched(video))
+		videoElement.addClass("watched");
+	
+	videoElement.append($("<div>", { class: "vidUploader" })
+			.append(createVideoLink(id).click(clickEvent)
+				.append($("<img>", { src: uploaderThumb, width: "20", class: "vidUploaderImg" }))
+				.append($("<span>", { class: "vidUploaderName"}).text(uploaderName))
+			)
+		).append($("<div>", { class: "vidContent" })
+			.append($("<div>", { class: "vidImg" })
+				.append(createVideoLink(id).click(clickEvent)
+					.append($("<img>", { src: VideoManager.getThumbnail(video), width: "240" }))
 				)
-			);
+			).append($("<div>", { class: "vidText" })
+				.append(createVideoLink(id).click(clickEvent)
+					.append($("<div>", { class: "vidTitle" }).text(VideoManager.getTitle(video)))
+				).append($("<div>", { class: "vidTime" }).text(new Date(VideoManager.getUploadTime(video)).toLocaleString()))
+				.append($("<div>", { class: "vidDesc" }).html(parseDescription(VideoManager.getDescription(video))))
+			)
+		);
+	return videoElement;
 }
 
-function linkify(text) {
-	return HtmlLinkify(text, { escape: false });
+function parseDescription(text) {
+	return HtmlLinkify(text.replace(/\n/g, "<br />"), { escape: false });
+}
+
+function createVideoLink(videoId) {
+	return $("<a>", { href: "https://www.youtube.com/watch?v="+videoId, target: "_blank" });
+}
+
+function getChronologicalOrder(videos) {
+	var output = $.extend([], videos);
+	
+	output.sort(function(a, b) {
+		//newest videos first
+		return new Date(VideoManager.getUploadTime(b)) - new Date(VideoManager.getUploadTime(a)); 
+	});
+	
+	return output;
 }

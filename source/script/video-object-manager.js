@@ -3,31 +3,37 @@
  * Would be the video object itself if Chrome allowed saving of non-vanilla JavaScript objects.
  */
 
-exports.createNewVideo = function() { return []; };
+exports.createNewVideo = function() { return [11]; };
 
-exports.getTitle = function(video) { return video[0]; }; 
-exports.setTitle = function(video, title) { video[0] = title; };
+exports.getId = function(video) { return video[0]; };
+exports.setId = function(video, id) { video[0] = id; };
 
-exports.getDescription = function(video) { return video[1]; };
-exports.setDescription = function(video, desc) { video[1]=desc; };
+exports.getTitle = function(video) { return video[1]; }; 
+exports.setTitle = function(video, title) { video[1] = title; };
 
-exports.getThumbnail = function(video) { return video[2]; };
-exports.setThumbnail = function(video, thumb) { video[2] = thumb; };
+exports.getDescription = function(video) { return video[2]; };
+exports.setDescription = function(video, desc) { video[2]=desc; };
 
-exports.getUploadTime = function(video) { return video[3]; };
-exports.setUploadTime = function(video, time) { video[3] = time; };
+exports.getThumbnail = function(video) { return video[3]; };
+exports.setThumbnail = function(video, thumb) { video[3] = thumb; };
 
-exports.getDuration = function(video) { return video[4]; };
-exports.setDuration = function(video, dur) { video[4] = dur; };
+exports.getUploadTime = function(video) { return video[4]; };
+exports.setUploadTime = function(video, time) { video[4] = time; };
 
-exports.getViewCount = function(video) { return video[5]; };
-exports.setViewCount = function(video, views) { video[5] = views; };
+exports.getDuration = function(video) { return video[5]; };
+exports.setDuration = function(video, dur) { video[5] = dur; };
 
-exports.getLikesCount = function(video) { return video[6]; };
-exports.setLikesCount = function(video, likes) { video[6] = likes; };
+exports.getViewCount = function(video) { return video[6]; };
+exports.setViewCount = function(video, views) { video[6] = views; };
 
-exports.getDislikesCount = function(video) { return video[7]; };
-exports.setDislikesCount = function(video, dislikes) { video[7] = dislikes; };
+exports.getLikesCount = function(video) { return video[7]; };
+exports.setLikesCount = function(video, likes) { video[7] = likes; };
 
-exports.getCommentsCount = function(video) { return video[8]; };
-exports.setCommentsCount = function(video, comments) { video[8] = comments; };
+exports.getDislikesCount = function(video) { return video[8]; };
+exports.setDislikesCount = function(video, dislikes) { video[8] = dislikes; };
+
+exports.getCommentsCount = function(video) { return video[9]; };
+exports.setCommentsCount = function(video, comments) { video[9] = comments; };
+
+exports.getWatched = function(video) { return video[10]; };
+exports.setWatched = function(video, watched) { video[10] = watched; };

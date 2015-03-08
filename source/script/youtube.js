@@ -139,7 +139,7 @@ function loadChannelsUploads(responseItemsJSON) {
 		subscriptions[id] = {
 			name: sub.snippet.title,
 			thumb: sub.snippet.thumbnails.default.url,
-			uploads: {}
+			uploads: []
 		};
 		
 		loadChannelUploadsPromises.push(loadChannelUploads(id));
@@ -200,10 +200,18 @@ function loadChannelUploadsFromVideoIds(channel, videoIds) {
 	var deferred = $.Deferred();
 	
 	var videoIdsString = "";
-	$.each(videoIds, function(i, id) {
-		if(!channel.uploads[id])
-			videoIdsString += id + ",";
+	var currentVideoIds = $.map(channel.uploads, function(video) {
+		return VideoManager.getId(video);
 	});
+	var newVideoIds = $.grep(videoIds, function(videoId) {
+		return currentVideoIds.indexOf(videoId) < 0;
+	});
+	$.each(newVideoIds, function(i, id) {
+		videoIdsString += id + ",";
+	});
+	
+	console.log(videoIdsString);
+	
 	//cut out last comma
 	videoIdsString = videoIdsString.slice(0, -1);
 	
@@ -211,6 +219,7 @@ function loadChannelUploadsFromVideoIds(channel, videoIds) {
 		getVideoDetailsApiCall(videoIdsString).done(function(response) {
 			$.each(response.items, function(i, videoJSON) {
 				var video = VideoManager.createNewVideo();
+				VideoManager.setId(video, videoJSON.id);
 				VideoManager.setTitle(video, videoJSON.snippet.title);
 				VideoManager.setDescription(video, videoJSON.snippet.description);
 				VideoManager.setThumbnail(video, videoJSON.snippet.thumbnails.medium.url);
@@ -220,8 +229,9 @@ function loadChannelUploadsFromVideoIds(channel, videoIds) {
 				VideoManager.setLikesCount(video, parseInt(videoJSON.statistics.likeCount));
 				VideoManager.setDislikesCount(video, parseInt(videoJSON.statistics.dislikeCount));
 				VideoManager.setCommentsCount(video, parseInt(videoJSON.statistics.commentCount));
+				VideoManager.setWatched(video, false);
 				
-				channel.uploads[videoJSON.id] = video;
+				channel.uploads.push(video);
 			});
 			
 			deferred.resolve();
