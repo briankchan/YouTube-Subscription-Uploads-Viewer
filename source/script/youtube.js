@@ -18,12 +18,12 @@ exports.authorize = function(interactive) {
 		api_scope: "https://www.googleapis.com/auth/youtube.readonly"
 	});
 	console.log("has token: " + auth.hasAccessToken());
-	console.log("is expired: " + auth.isAccessTokenExpired());
+	console.log("is expired: " + auth.isAccessTokenExpired()); //debugging
 	window.auth = auth;
 	auth.authorize(function() {
 		var token = auth.getAccessToken();
 		YoutubeApi.setAuthToken(token);
-		console.log(token);
+		console.log(token);  //debugging
 		deferred.resolve();
 	});
 	

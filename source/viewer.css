@@ -85,6 +85,9 @@ ul {
 	font-size: 15px;
 	font-weight: bold;
 }
+.watched .vidUploader {
+	background: lightgray;
+}
 
 .vidUploader>a {
 	color: #000000;

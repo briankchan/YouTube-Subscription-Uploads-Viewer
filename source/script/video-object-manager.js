@@ -12,7 +12,7 @@ exports.getTitle = function(video) { return video[1]; };
 exports.setTitle = function(video, title) { video[1] = title; };
 
 exports.getDescription = function(video) { return video[2]; };
-exports.setDescription = function(video, desc) { video[2]=desc; };
+exports.setDescription = function(video, desc) { video[2] = desc; };
 
 exports.getThumbnail = function(video) { return video[3]; };
 exports.setThumbnail = function(video, thumb) { video[3] = thumb; };
