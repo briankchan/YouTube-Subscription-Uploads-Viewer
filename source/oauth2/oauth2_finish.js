@@ -26,5 +26,3 @@ if (index > -1) {
 // Derive adapter name from URI and then finish the process.
 var adapterName = OAuth2.lookupAdapterName(url);
 var finisher = new OAuth2(adapterName, OAuth2.FINISH);
-
-//TODO: why isn't this closing

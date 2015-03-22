@@ -5,9 +5,12 @@
 
 var YoutubeApi = require("./youtube-api.js");
 var VideoManager = require("./video-object-manager.js");
+var Storage = require("./storage.js");
 
-var subscriptions;
-var subscriptionsInitDeferred = $.Deferred();
+var channels;
+var channelsInitDeferred = $.Deferred();
+var subscriptionsList;
+var subscriptionsListInitDeferred = $.Deferred();
 
 exports.authorize = function(interactive) {
 	var deferred = $.Deferred();
@@ -19,7 +22,7 @@ exports.authorize = function(interactive) {
 	});
 	console.log("has token: " + auth.hasAccessToken());
 	console.log("is expired: " + auth.isAccessTokenExpired()); //debugging
-	window.auth = auth;
+	window.auth = auth; //debugging
 	auth.authorize(function() {
 		var token = auth.getAccessToken();
 		YoutubeApi.setAuthToken(token);
@@ -58,102 +61,82 @@ exports.authorize = function(interactive) {
 	return deferred.promise();
 };
 
-exports.setSubscriptions = function(subs) {
-	subscriptions = exports.subscriptions = subs; //TODO: stop exporting this (debug code)
-	subscriptionsInitDeferred.resolve();
+exports.loadVideos = function() {
+	Storage.get("channels").done(function(storage) {
+		console.log(storage);
+		channels = exports.channels = (typeof storage.channels === "object") ? storage.channels : {}; //debugging (exporting subs)
+		channelsInitDeferred.resolve();
+	});
+	//Storage.get("groups").done(function(storage) {
+	
+	//});
+};
+
+exports.loadSubscriptions = function() {
+	return YoutubeApi.getSubscriptions().done(function(subs) {
+		var newSubsOrder = [];
+		
+		$.each(subs, function(id, sub) {
+			newSubsOrder.push(id);
+			
+			if(!channels[id]) {
+				channels[id] = {
+					uploads: []
+				};
+			}
+			channels[id].name = sub.name;
+			channels[id].thumb = sub.thumb;
+		});
+		
+		subscriptionsList = newSubsOrder; //TODO filter + handle deleted subs
+		
+		subscriptionsListInitDeferred.resolve();
+	})
 };
 
 exports.loadSubscriptionsUploads = function() {
 	var deferred = $.Deferred();
 	
-	subscriptionsInitDeferred.done(function() {
-		var promises;
-		var getSubscriptionsPromise;
-		if ($.isEmptyObject(subscriptions)) { //should only be true on first run
-			promises = [];
-			getSubscriptionsPromise = getSubscriptions().progress(function(responseItems) {
-				promises.push(loadChannelsUploads(responseItems));
-			})
-		} else {
-			getSubscriptionsPromise = $.Deferred().resolve().promise();
-			promises = $.map(subscriptions, function(sub, id) {
-				return loadChannelUploads(id);
-			});
-		}
+	
+	$.when(channelsInitDeferred, subscriptionsListInitDeferred).done(function() { //TODO should i really be checking here
+		var promises = $.map(subscriptionsList, function(id, i) {
+			return loadChannelUploads(id);
+		});
 		
-		getSubscriptionsPromise.done(function() {
-			$.when.apply($, promises).done(function() {
-				deferred.resolve(subscriptions);
-			});
+		$.when.apply($, promises).done(function() {
+			deferred.resolve(channels, subscriptionsList);
+			Storage.set("channels", channels);
 		});
 	});
+	
+	
 	
 	return deferred.promise();
 };
 
-function getSubscriptions() {
-	var deferred = $.Deferred();
-	
-	getSubscriptionsApiCall().done(function(response) {
-		getSubscriptionsHelper(deferred, response);
-	});
-	
-	return deferred.promise();
-}
-
-function getSubscriptionsHelper(deferred, response) {
-	deferred.notify(response.items);
-	if(response.nextPageToken)
-		getSubscriptionsNextPageApiCall(response.nextPageToken).done(function(newResponse) {
-			getSubscriptionsHelper(deferred, newResponse);
-		});
-	else deferred.resolve();
-}
-
-function getSubscriptionsApiCall() {
-	return YoutubeApi.subscriptions.get({
-		mine: true,
-		part: "id,snippet",
-		fields: "nextPageToken,items(snippet(title,resourceId/channelId,thumbnails))",
-		maxResults: 50,
-		order: "alphabetical"
-	});
-}
-
-function getSubscriptionsNextPageApiCall(nextPageToken) {
-	return YoutubeApi.subscriptions.get({
-		mine: true,
-		part: "snippet",
-		fields: "nextPageToken,items(snippet(title,resourceId/channelId,thumbnails))",
-		maxResults: 50,
-		order: "alphabetical",
-		pageToken: nextPageToken
-	});
-}
-
-function loadChannelsUploads(responseItemsJSON) {
-	var loadChannelUploadsPromises = [];
-	$.each(responseItemsJSON, function(i, sub) {
-		var id = sub.snippet.resourceId.channelId;
-		
-		subscriptions[id] = {
-			name: sub.snippet.title,
-			thumb: sub.snippet.thumbnails.default.url,
-			uploads: []
-		};
-		
-		loadChannelUploadsPromises.push(loadChannelUploads(id));
-	});
-	return $.when.apply($, loadChannelUploadsPromises);
-}
+//function loadChannelsUploads(responseItemsJSON) {
+//	var loadChannelUploadsPromises = [];
+//	$.each(responseItemsJSON, function(i, sub) {
+//		var id = sub.snippet.resourceId.channelId;
+//		
+//		channels[id] = {
+//			name: sub.snippet.title,
+//			thumb: sub.snippet.thumbnails.default.url,
+//			uploads: []
+//		};
+//		
+//		loadChannelUploadsPromises.push(loadChannelUploads(id));
+//	});
+//	return $.when.apply($, loadChannelUploadsPromises);
+//}
 
 function loadChannelUploads(channelId) {
 	var deferred = $.Deferred();
 	
-	var channel = subscriptions[channelId];
+	var channel = channels[channelId];
 	
 	loadChannelUploadsPlaylistId(channelId).done(function() {
-		getPlaylistVideoIds(channel.uploadsPlaylist).done(function(videoIds) {
+		YoutubeApi.getPlaylistItems(channel.uploadsPlaylist).done(function(videoIds) {
 			loadChannelUploadsFromVideoIds(channel, videoIds).done(function() {
 				deferred.resolve();
 			});
@@ -163,37 +146,15 @@ function loadChannelUploads(channelId) {
 	return deferred.promise();
 }
 
-function loadChannelUploadsPlaylistId(channelId) {
-	var channel = subscriptions[channelId];
+function loadChannelUploadsPlaylistId(channelId) { //assumes uploads playlist never changes
+	var channel = channels[channelId];
 	
 	//if uploads playlist id is not saved, get and save it; else, we're already done
-	return channel.uploadsPlaylist ?
+	return channel.uploadsPlaylist ? //TODO move to channel init
 			$.Deferred().resolve().promise() :
-			getChannelUploadsPlaylistApiCall(channelId).done(function(response) {
-				channel.uploadsPlaylist = response.items[0].contentDetails.relatedPlaylists.uploads;
+			YoutubeApi.getChannelUploadsPlaylist(channelId).done(function(id) {
+				channel.uploadsPlaylist = id;
 			});
-}
-
-function getChannelUploadsPlaylistApiCall(channelId) {
-	return YoutubeApi.channels.get({
-		id: channelId,
-		part: "contentDetails",
-		fields: "items/contentDetails/relatedPlaylists/uploads"
-	});
-}
-
-function getPlaylistVideoIds(playlistId) {
-	var deferred = $.Deferred();
-	
-	getPlaylistItemsApiCall(playlistId).done(function(response) {
-		var videoIds = $.map(response.items, function(video, i) {
-			return video.contentDetails.videoId;
-		});
-		
-		deferred.resolve(videoIds);
-	});
-	
-	return deferred;
 }
 
 function loadChannelUploadsFromVideoIds(channel, videoIds) {
@@ -209,31 +170,14 @@ function loadChannelUploadsFromVideoIds(channel, videoIds) {
 	$.each(newVideoIds, function(i, id) {
 		videoIdsString += id + ",";
 	});
+	videoIdsString = videoIdsString.slice(0, -1); //cut out last comma
 	
-	console.log(videoIdsString);
-	
-	//cut out last comma
-	videoIdsString = videoIdsString.slice(0, -1);
+	if(videoIdsString)
+		console.log(videoIdsString); //debugging
 	
 	if(videoIdsString != "") {
-		getVideoDetailsApiCall(videoIdsString).done(function(response) {
-			$.each(response.items, function(i, videoJSON) {
-				var video = VideoManager.createNewVideo();
-				VideoManager.setId(video, videoJSON.id);
-				VideoManager.setTitle(video, videoJSON.snippet.title);
-				VideoManager.setDescription(video, videoJSON.snippet.description);
-				VideoManager.setThumbnail(video, videoJSON.snippet.thumbnails.medium.url);
-				VideoManager.setUploadTime(video, videoJSON.snippet.publishedAt);
-				VideoManager.setDuration(video, videoJSON.contentDetails.duration);
-				VideoManager.setViewCount(video, parseInt(videoJSON.statistics.viewCount));
-				VideoManager.setLikesCount(video, parseInt(videoJSON.statistics.likeCount));
-				VideoManager.setDislikesCount(video, parseInt(videoJSON.statistics.dislikeCount));
-				VideoManager.setCommentsCount(video, parseInt(videoJSON.statistics.commentCount));
-				VideoManager.setWatched(video, false);
-				
-				channel.uploads.push(video);
-			});
-			
+		YoutubeApi.getVideoDetails(videoIdsString).done(function(videos) {
+			$.merge(channel.uploads,videos); //TODO pass upwards
 			deferred.resolve();
 		});
 	} else {
@@ -243,36 +187,18 @@ function loadChannelUploadsFromVideoIds(channel, videoIds) {
 	return deferred.promise();
 }
 
-function getPlaylistItemsApiCall(playlistId) {
-	return YoutubeApi.playlistItems.get({
-		playlistId: playlistId,
-		part: "contentDetails",
-		fields: "items/contentDetails/videoId",
-		maxResults: 50
-	});
-}
-
-function getVideoDetailsApiCall(videoIds) {
-	return YoutubeApi.videos.get({
-		id: videoIds,
-		part: "id,snippet,contentDetails,statistics",
-		fields: "items(id,snippet(publishedAt,title,description,thumbnails/medium/url),contentDetails/duration,statistics(viewCount,likeCount,dislikeCount,commentCount))",
-		maxResults: 50
-	});
-}
-
 exports.isChannelLoaded = function(channelId) {
-	return subscriptions[channelId] != undefined;
+	return channels[channelId] != undefined;
 };
 
 exports.getChannelName = function(channelId) {
-	return subscriptions[channelId].name;
+	return channels[channelId].name;
 };
 
 exports.getChannelThumb = function(channelId) {
-	return subscriptions[channelId].thumb;
+	return channels[channelId].thumb;
 };
 
 exports.getChannelUploads = function(channelId) {
-	return subscriptions[channelId].uploads;
+	return channels[channelId].uploads;
 };

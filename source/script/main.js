@@ -7,12 +7,11 @@ window.$ = window.jquery = require("jquery");
 var HtmlLinkify = require("html-linkify");
 var Youtube = window.Youtube = require("./youtube.js");
 var VideoManager = require("./video-object-manager.js");
-var Storage = require("./storage.js");
 
 var currentView;
 
 $(function() {
-	//keep scrolling from bubbling to outer window
+	//keep scrolling in nav pane from bubbling to outer window
 	$('#nav').bind('mousewheel', function(e) {//TODO: move all event handlers to another module?
 		var t = $(this);
 		if (e.originalEvent.wheelDelta > 0 && t.scrollTop() == 0) {
@@ -20,10 +19,6 @@ $(function() {
 		} else if (e.originalEvent.wheelDelta < 0 && (t.scrollTop() == t.get(0).scrollHeight - t.innerHeight())) {
 			e.preventDefault();
 		}
-	});
-	
-	Storage.get("subscriptions").done(function(storage) {
-		Youtube.setSubscriptions((typeof storage.subscriptions === "object") ? storage.subscriptions : {});
 	});
 	
 	//log in with UI when button is clicked
@@ -46,21 +41,25 @@ function authorizeAndLoad(interactive) {
 }
 
 function loadSubscriptionsUploads() {
-	console.log("loading subs"); //TODO remove debug code
+	console.log("loading subs"); //debugging
 	var start = new Date();
-	Youtube.loadSubscriptionsUploads().done(function(subscriptions) {
+	
+	Youtube.loadSubscriptions();
+	Youtube.loadVideos();
+	Youtube.loadSubscriptionsUploads().done(function(subscriptions, subscriptionsOrder) {
 		var elapsed = new Date()-start;
 		console.log(elapsed + "ms");
 		
 		if (localStorage.currentView)
 			displayUploads(localStorage.currentView);
-		$.each(subscriptions, function(id, sub) {
+		$.each(subscriptionsOrder, function(i, id) {
+			var sub = subscriptions[id];
 			$("#subscriptions").append($("<li>").text(sub.name).click(function() {
 				displayUploads(id);
 			}));
 		});
 		
-		Storage.set("subscriptions", subscriptions);
+		
 	});
 }
 
