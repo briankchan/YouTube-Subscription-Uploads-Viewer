@@ -24,37 +24,39 @@ $(function() {
 		}
 	});
 	
-	if(Youtube.isLoggedIn()) {
-		$("#authorize-button").css("visibility", "hidden");
-		loadSubscriptionsUploads();
-	} else {
-		$("#authorize-button").css("visibility", "");
-	}
+	Youtube.loadVideos();
+	
+	
+	if(Youtube.isLoggedIn())
+		authSuccess();
+	else authFail();
 	
 	//log in with UI when button is clicked
-	$("#authorize-button").click(function() { authorizeAndLoad(true); });
+	$("#authorize-button").click(function() { authorize(true); });
 	
 	$("#refresh-button").click(function() { loadSubscriptionsUploads(); });
 	
-	
-	$("#reload-extension-button").click(function() { chrome.runtime.reload(); });
+	$("#reload-extension-button").click(function() { chrome.runtime.reload(); }); //debugging (reload ext. button)
 });
 
-function authorizeAndLoad(interactive) {
-	Youtube.authorize(interactive).done(function() {
-		$("#authorize-button").css("visibility", "hidden");
-		loadSubscriptionsUploads();
-	}).fail(function() {
-		$("#authorize-button").css("visibility", "");
-	});
+function authorize(interactive) {
+	Youtube.authorize(interactive).done(authSuccess).fail(authFail);
+}
+
+function authSuccess() {
+	$("#authorize-button").css("visibility", "hidden");
+	Youtube.loadSubscriptions();
+	loadSubscriptionsUploads();
+}
+
+function authFail() {
+	$("#authorize-button").css("visibility", "");
 }
 
 function loadSubscriptionsUploads() {
 	console.log("loading subs"); //debugging
 	var start = new Date();
 	
-	Youtube.loadSubscriptions();
-	Youtube.loadVideos();
 	Youtube.loadSubscriptionsUploads().done(function(subscriptions, subscriptionsOrder) {
 		var elapsed = new Date()-start;
 		console.log(elapsed + "ms");
@@ -67,8 +69,6 @@ function loadSubscriptionsUploads() {
 				displayUploads(id);
 			}));
 		});
-		
-		
 	});
 }
 
