@@ -6,12 +6,12 @@ window.$ = window.jquery = require("jquery");
 
 var backgroundPage = chrome.extension.getBackgroundPage();
 
-var Youtube = window.Youtube = backgroundPage.Youtube
+var Youtube = window.Youtube = backgroundPage.Youtube;
 
 var HtmlLinkify = require("html-linkify");
 var VideoManager = require("./video-object-manager.js");
 
-var currentView;
+var currentView = localStorage.currentView;
 
 $(function() {
 	//keep scrolling in nav pane from bubbling to outer window
@@ -24,67 +24,85 @@ $(function() {
 		}
 	});
 	
-	Youtube.loadVideos();
 	
 	
-	if(Youtube.isLoggedIn())
-		authSuccess();
-	else authFail();
+	if(Youtube.isLoggedIn()) {
+		hideLogin();
+		drawSubscriptions();
+		drawUploads();
+	} else showLogin();
 	
 	//log in with UI when button is clicked
-	$("#authorize-button").click(function() { authorize(true); });
+	$("#authorize-button").click(function() { authorize(); });
 	
 	$("#refresh-button").click(function() { loadSubscriptionsUploads(); });
 	
 	$("#reload-extension-button").click(function() { chrome.runtime.reload(); }); //debugging (reload ext. button)
 });
 
-function authorize(interactive) {
-	Youtube.authorize(interactive).done(authSuccess).fail(authFail);
+function authorize() {
+	Youtube.authorize(true).done(function() {
+		hideLogin();
+		Youtube.updateSubscriptions().done(function() {
+			drawSubscriptions();
+			loadSubscriptionsUploads();
+		});
+	}).fail(showLogin);
 }
 
-function authSuccess() {
+function hideLogin() {
 	$("#authorize-button").css("visibility", "hidden");
-	Youtube.loadSubscriptions();
-	loadSubscriptionsUploads();
 }
 
-function authFail() {
+function showLogin() {
 	$("#authorize-button").css("visibility", "");
 }
 
+function drawSubscriptions() {
+	console.log("drawing subs"); //debugging
+	
+	Youtube.getSubscriptions().done(function(subsList) {
+		$.each(subsList, function(i, id) {
+			var name = Youtube.getChannelName(id);
+			$("#subscriptions").append($("<li>").text(name).click(function() {
+				displayUploads(id);
+			}));
+		})
+	});
+}
+
+function drawUploads() {
+	if (currentView)
+		displayUploads(currentView);
+}
+
 function loadSubscriptionsUploads() {
-	console.log("loading subs"); //debugging
+	console.log("loading videos"); //debugging
 	var start = new Date();
 	
-	Youtube.loadSubscriptionsUploads().done(function(subscriptions, subscriptionsOrder) {
+	Youtube.updateSubscriptionsUploads().done(function() {
 		var elapsed = new Date()-start;
 		console.log(elapsed + "ms");
 		
-		if (localStorage.currentView)
-			displayUploads(localStorage.currentView);
-		$.each(subscriptionsOrder, function(i, id) {
-			var sub = subscriptions[id];
-			$("#subscriptions").append($("<li>").text(sub.name).click(function() {
-				displayUploads(id);
-			}));
-		});
+		drawUploads();
 	});
 }
 
 function displayUploads(id) {
-	if (Youtube.isChannelLoaded(id)) {
-		var uploads = getChronologicalOrder(Youtube.getChannelUploads(id));
-		var thumb = Youtube.getChannelThumb(id);
-		var name = Youtube.getChannelName(id);
-		
-		clearVideosPanel();
-		$(window).scrollTop(0);
-		$.each(uploads, function(i, video) {
-			$("#videos").append($("<li>").append(createVideoElement(video, name, thumb)));
-		});
-		localStorage.currentView = currentView = id;
-	} else console.error(id + " is not a valid loaded channel ID.");
+	Youtube.isChannelLoaded(id).done(function(loaded) {
+		if (loaded) {
+			var uploads = getChronologicalOrder(Youtube.getChannelUploads(id));
+			var thumb = Youtube.getChannelThumb(id);
+			var name = Youtube.getChannelName(id);
+			
+			clearVideosPanel();
+			$(window).scrollTop(0);
+			$.each(uploads, function(i, video) {
+				$("#videos").append($("<li>").append(createVideoElement(video, name, thumb)));
+			});
+			localStorage.currentView = currentView = id;
+		} else console.error(id + " is not a valid loaded channel ID.");
+	});
 }
 
 function clearVideosPanel() {
