@@ -11,19 +11,18 @@ var playlistItems = new YoutubeResource("playlistItems");
 var subscriptions = new YoutubeResource("subscriptions");
 var videos = new YoutubeResource("videos");
 
-var authentication;
+var auth = new OAuth2("google", {
+	client_id: "285678490171-1v3db8vbi7108iukl35ojiub87ja50s7.apps.googleusercontent.com",
+	client_secret: "m7ozSCV_hGNTXKwR_aW_7q5O",
+	api_scope: "https://www.googleapis.com/auth/youtube.readonly"
+});
 
 exports.authorize = function(interactive) {
 	var deferred = $.Deferred();
 	
-	var auth = new OAuth2("google", {
-		client_id: "285678490171-1v3db8vbi7108iukl35ojiub87ja50s7.apps.googleusercontent.com",
-		client_secret: "m7ozSCV_hGNTXKwR_aW_7q5O",
-		api_scope: "https://www.googleapis.com/auth/youtube.readonly"
-	});
 	console.log("has token: " + auth.hasAccessToken());
 	console.log("is expired: " + auth.isAccessTokenExpired()); //debugging
-	window.auth = authentication = auth; //debugging
+	window.auth = auth; //debugging
 	auth.authorize(function() {
 		var token = auth.getAccessToken();
 		YoutubeResource.setAuthToken(token);
@@ -63,7 +62,7 @@ exports.authorize = function(interactive) {
 };
 
 exports.isLoggedIn = function() {
-	return authentication.hasAccessToken() && !authentication.isAccessTokenExpired();
+	return auth.hasAccessToken() && !auth.isAccessTokenExpired();
 };
 
 exports.getSubscriptions = function() {
