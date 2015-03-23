@@ -29,9 +29,18 @@ module.exports = function(grunt) {
 					}
 				}
 			},
-			debug: {
+			debugViewer: {
 				src: "source/script/main.js",
 				dest: "source/viewer.js",
+				options: {
+					browserifyOptions: {
+						debug: true
+					}
+				}
+			},
+			debugBg: {
+				src: "source/script/background.js",
+				dest: "source/background.js",
 				options: {
 					browserifyOptions: {
 						debug: true
@@ -45,6 +54,6 @@ module.exports = function(grunt) {
 	grunt.loadNpmTasks("grunt-contrib-watch");
 	
 	grunt.registerTask("default", [ "build", "watch" ]);
-	grunt.registerTask("build", [ "browserify:debug" ]);
+	grunt.registerTask("build", [ "browserify:debugBg", "browserify:debugViewer" ]);
 	
 };

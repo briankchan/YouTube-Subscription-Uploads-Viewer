@@ -3,3 +3,4 @@ bower_components/
 .idea/
 source/viewer.js
 source/viewer.js.map
+source/background.js

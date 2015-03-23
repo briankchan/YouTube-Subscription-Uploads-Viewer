@@ -16,6 +16,10 @@ exports.authorize = function(interactive) {
 	return YoutubeApi.authorize(interactive);
 };
 
+exports.isLoggedIn = function() {
+	return YoutubeApi.isLoggedIn();
+};
+
 exports.loadVideos = function() {
 	Storage.get("channels").done(function(storage) {
 		channels = exports.channels = (typeof storage.channels === "object") ? storage.channels : {}; //debugging (exporting subs)

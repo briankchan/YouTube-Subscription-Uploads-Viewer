@@ -4,8 +4,11 @@
 
 window.$ = window.jquery = require("jquery");
 
+var backgroundPage = chrome.extension.getBackgroundPage();
+
+var Youtube = window.Youtube = backgroundPage.Youtube
+
 var HtmlLinkify = require("html-linkify");
-var Youtube = window.Youtube = require("./youtube.js");
 var VideoManager = require("./video-object-manager.js");
 
 var currentView;
@@ -21,9 +24,15 @@ $(function() {
 		}
 	});
 	
+	if(Youtube.isLoggedIn()) {
+		$("#authorize-button").css("visibility", "hidden");
+		loadSubscriptionsUploads();
+	} else {
+		$("#authorize-button").css("visibility", "");
+	}
+	
 	//log in with UI when button is clicked
 	$("#authorize-button").click(function() { authorizeAndLoad(true); });
-	setTimeout(function() { authorizeAndLoad(false); }, 1); //attempt to log in without UI
 	
 	$("#refresh-button").click(function() { loadSubscriptionsUploads(); });
 	
