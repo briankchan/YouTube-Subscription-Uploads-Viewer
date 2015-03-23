@@ -13,57 +13,11 @@ var subscriptionsList;
 var subscriptionsListInitDeferred = $.Deferred();
 
 exports.authorize = function(interactive) {
-	var deferred = $.Deferred();
-	
-	var auth = new OAuth2("google", {
-		client_id: "285678490171-1v3db8vbi7108iukl35ojiub87ja50s7.apps.googleusercontent.com",
-		client_secret: "m7ozSCV_hGNTXKwR_aW_7q5O",
-		api_scope: "https://www.googleapis.com/auth/youtube.readonly"
-	});
-	console.log("has token: " + auth.hasAccessToken());
-	console.log("is expired: " + auth.isAccessTokenExpired()); //debugging
-	window.auth = auth; //debugging
-	auth.authorize(function() {
-		var token = auth.getAccessToken();
-		YoutubeApi.setAuthToken(token);
-		console.log(token);  //debugging
-		deferred.resolve();
-	});
-	
-	//chrome.identity.launchWebAuthFlow({
-	//	url: "https://accounts.google.com/o/oauth2/auth?response_type=code" +
-	//	"&scope=" + "https://www.googleapis.com/auth/youtube.readonly" + 
-	//	"&redirect_uri=" + "urn:ietf:wg:oauth:2.0:oob" + 
-	//	"&client_id=285678490171-jje98f1oqbu587msoegirdd7v6qjjtfq.apps.googleusercontent.com",
-	//	interactive: interactive
-	//}, function(responseUrl) {
-	//	console.log(chrome.runtime.lastError);
-	//	console.log(responseUrl);
-	//	deferred.reject();
-	//});
-	
-	//chrome.identity.getAuthToken({ interactive: interactive }, function(authResult) {
-	//	if(chrome.runtime.lastError) {
-	//		deferred.reject(chrome.runtime.lastError.message);
-	//		console.log(chrome.runtime.lastError.message)
-	//	} else if (authResult) {
-	//		if(!authResult.error) {
-	//			YoutubeApi.setAuthToken(authResult);
-	//			deferred.resolve();
-	//		} else {
-	//			deferred.reject(authResult.error);
-	//		}
-	//	} else {
-	//		deferred.reject();
-	//	}
-	//});
-	
-	return deferred.promise();
+	return YoutubeApi.authorize(interactive);
 };
 
 exports.loadVideos = function() {
 	Storage.get("channels").done(function(storage) {
-		console.log(storage);
 		channels = exports.channels = (typeof storage.channels === "object") ? storage.channels : {}; //debugging (exporting subs)
 		channelsInitDeferred.resolve();
 	});
