@@ -21,7 +21,7 @@ exports.loadVideos = function() {
 		channels = exports.channels = (typeof storage.channels === "object") ? storage.channels : {}; //debugging (exporting subs)
 		channelsInitDeferred.resolve();
 	});
-	//Storage.get("groups").done(function(storage) {
+	//Storage.get("groups").done(function(storage) { TODO groups.
 	
 	//});
 };
@@ -35,17 +35,24 @@ exports.loadSubscriptions = function() {
 			
 			if(!channels[id]) {
 				channels[id] = {
+					name: sub.name,
+					thumb: sub.thumb,
 					uploads: []
 				};
+				YoutubeApi.getChannelUploadsPlaylist(id).done(function(playlistId) {
+					channels[id].uploadsPlaylist = playlistId;
+				});
+			} else {
+				channels[id].name = sub.name;
+				channels[id].thumb = sub.thumb;
 			}
-			channels[id].name = sub.name;
-			channels[id].thumb = sub.thumb;
+			
 		});
 		
 		subscriptionsList = newSubsOrder; //TODO filter + handle deleted subs
 		
 		subscriptionsListInitDeferred.resolve();
-	})
+	});
 };
 
 exports.loadSubscriptionsUploads = function() {
@@ -68,74 +75,46 @@ exports.loadSubscriptionsUploads = function() {
 	return deferred.promise();
 };
 
-//function loadChannelsUploads(responseItemsJSON) {
-//	var loadChannelUploadsPromises = [];
-//	$.each(responseItemsJSON, function(i, sub) {
-//		var id = sub.snippet.resourceId.channelId;
-//		
-//		channels[id] = {
-//			name: sub.snippet.title,
-//			thumb: sub.snippet.thumbnails.default.url,
-//			uploads: []
-//		};
-//		
-//		loadChannelUploadsPromises.push(loadChannelUploads(id));
-//	});
-//	return $.when.apply($, loadChannelUploadsPromises);
-//}
-
 function loadChannelUploads(channelId) {
 	var deferred = $.Deferred();
 	
 	var channel = channels[channelId];
 	
-	loadChannelUploadsPlaylistId(channelId).done(function() {
-		YoutubeApi.getPlaylistItems(channel.uploadsPlaylist).done(function(videoIds) {
-			loadChannelUploadsFromVideoIds(channel, videoIds).done(function() {
-				deferred.resolve();
-			});
+	YoutubeApi.getPlaylistItems(channel.uploadsPlaylist).done(function(videoIds) {
+		//only get new videos
+		var currentVideoIds = $.map(channel.uploads, function(video) {
+			return VideoManager.getId(video);
+		});
+		var newVideoIds = $.grep(videoIds, function(videoId) {
+			return currentVideoIds.indexOf(videoId) < 0;
+		});
+		
+		loadVideos(newVideoIds).done(function(videos) {
+			if(videos)
+				$.merge(channel.uploads, videos);
+			deferred.resolve();
 		});
 	});
 	
 	return deferred.promise();
 }
 
-function loadChannelUploadsPlaylistId(channelId) { //assumes uploads playlist never changes
-	var channel = channels[channelId];
-	
-	//if uploads playlist id is not saved, get and save it; else, we're already done
-	return channel.uploadsPlaylist ? //TODO move to channel init
-			$.Deferred().resolve().promise() :
-			YoutubeApi.getChannelUploadsPlaylist(channelId).done(function(id) {
-				channel.uploadsPlaylist = id;
-			});
-}
-
-function loadChannelUploadsFromVideoIds(channel, videoIds) {
+function loadVideos(videoIds) {
 	var deferred = $.Deferred();
 	
 	var videoIdsString = "";
-	var currentVideoIds = $.map(channel.uploads, function(video) {
-		return VideoManager.getId(video);
-	});
-	var newVideoIds = $.grep(videoIds, function(videoId) {
-		return currentVideoIds.indexOf(videoId) < 0;
-	});
-	$.each(newVideoIds, function(i, id) {
+	$.each(videoIds, function(i, id) {
 		videoIdsString += id + ",";
 	});
 	videoIdsString = videoIdsString.slice(0, -1); //cut out last comma
 	
-	if(videoIdsString)
-		console.log(videoIdsString); //debugging
-	
 	if(videoIdsString != "") {
+		console.log(videoIdsString); //debugging
 		YoutubeApi.getVideoDetails(videoIdsString).done(function(videos) {
-			$.merge(channel.uploads,videos); //TODO pass upwards
-			deferred.resolve();
+			deferred.resolve(videos);
 		});
 	} else {
-		deferred.resolve();
+		deferred.resolve(null);
 	}
 	
 	return deferred.promise();
