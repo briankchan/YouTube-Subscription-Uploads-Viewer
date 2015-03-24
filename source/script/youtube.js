@@ -47,6 +47,7 @@ exports.updateSubscriptions = function() {
 	channelsInitDeferred.done(function() { //TODO move checks to main.js
 		YoutubeApi.getSubscriptions().done(function(subs) {
 			var newSubsOrder = [];
+			var getChannelUploadsPlaylistDeferreds = [];
 			
 			$.each(subs, function(id, sub) { //assumes chrome gets keys in order added to object
 				newSubsOrder.push(id);
@@ -57,9 +58,9 @@ exports.updateSubscriptions = function() {
 						thumb: sub.thumb,
 						uploads: []
 					};
-					YoutubeApi.getChannelUploadsPlaylist(id).done(function(playlistId) {
+					getChannelUploadsPlaylistDeferreds.push(YoutubeApi.getChannelUploadsPlaylist(id).done(function(playlistId) {
 						channels[id].uploadsPlaylist = playlistId;
-					});
+					}));
 				} else {
 					channels[id].name = sub.name;
 					channels[id].thumb = sub.thumb;
@@ -70,7 +71,9 @@ exports.updateSubscriptions = function() {
 			
 			Storage.set("subscriptionsList", newSubsOrder);
 			
-			deferred.resolve(newSubsOrder);
+			$.when.apply($, getChannelUploadsPlaylistDeferreds).done(function() {
+				deferred.resolve(newSubsOrder);
+			});
 		});
 	});
 	
