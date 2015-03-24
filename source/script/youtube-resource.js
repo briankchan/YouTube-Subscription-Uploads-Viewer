@@ -1,34 +1,58 @@
 
-//var API_KEY = "AIzaSyClOj2RmQTkYbfqL4o8mBhzx8Jwo-mNhpo"; //not actually needed with auth tokens
 var BASE_URL = "https://www.googleapis.com/youtube/v3/";
+var API_KEY = "AIzaSyClOj2RmQTkYbfqL4o8mBhzx8Jwo-mNhpo";
 
 module.exports = YoutubeResource;
-module.exports.setAuthToken = function(token) {
+
+function YoutubeResource(resource, authenticated) {
+	this.resource = resource;
+	this.authenticated = (authenticated == true);
+}
+
+YoutubeResource.setAuthToken = function(token) {
 	YoutubeResource.authToken = token;
 };
-
-function YoutubeResource(resource) {
-	this.resource = resource;
-}
 
 YoutubeResource.prototype.get    = function(options) { return this.ajax("GET", options); };
 YoutubeResource.prototype.post   = function(options) { return this.ajax("POST", options); };
 YoutubeResource.prototype.put    = function(options) { return this.ajax("PUT", options); };
 YoutubeResource.prototype.delete = function(options) { return this.ajax("DELETE", options); };
-YoutubeResource.prototype.ajax = function(method, options) {
+YoutubeResource.prototype.ajax   = function(method, options) {
+	return sendRequest(this.resource, method, options, this.authenticated);
+};
+
+function sendRequest(resource, method, options, authenticated) {
 	var deferred = $.Deferred();
 	
-	$.ajax({
-		url: BASE_URL + this.resource,
+	var settings = {
+		url: BASE_URL + resource,
 		type: method,
-		headers: { authorization: "Bearer " + YoutubeResource.authToken },
 		data: options
-	}).fail(function(jqXHR, textStatus, errorThrown) {
+	};
+	
+	if(authenticated) {
+		settings.headers = { authorization: "Bearer " + YoutubeResource.authToken }
+	} else {
+		settings.data.key = API_KEY;
+	}
+	
+	$.ajax(settings).fail(function(jqXHR, textStatus, errorThrown) {
 		console.error(textStatus + " " + errorThrown + " trying to access YouTube Data API");
-		deferred.reject(textStatus, errorThrown);
+		
+		if(errorThrown == "500" && textStatus == "OK") { //try again for 500 OK errors
+			console.debug("trying again"); //debugging
+			$.ajax(settings).fail(function(jqXHR, textStatus, errorThrown) {
+				console.error(textStatus + " " + errorThrown + " trying to access YouTube Data API (again)");
+				deferred.reject(textStatus, errorThrown);
+			}).done(function(data, textStatus, jqXHR) {
+				deferred.resolve(data);
+			});
+		} else {
+			deferred.reject(textStatus, errorThrown);
+		}
 	}).done(function(data, textStatus, jqXHR) {
 		deferred.resolve(data);
 	});
 	
 	return deferred.promise();
-};
+}
