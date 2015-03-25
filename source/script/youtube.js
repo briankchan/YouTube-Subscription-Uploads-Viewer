@@ -8,9 +8,7 @@ var VideoManager = require("./video-object-manager.js");
 var Storage = require("./storage.js");
 
 var channels;
-var channelsInitDeferred = $.Deferred();
 var subscriptionsList;
-var subscriptionsListInitDeferred = $.Deferred();
 
 exports.authorize = function(interactive) {
 	return YoutubeApi.authorize(interactive);
@@ -21,59 +19,52 @@ exports.isLoggedIn = function() {
 };
 
 exports.loadVideos = function() {
-	Storage.get("channels").done(function(storage) {
+	return Storage.get("channels").done(function(storage) {
 		channels = exports.channels = (typeof storage.channels === "object") ? storage.channels : {}; //debugging (exporting subs)
-		channelsInitDeferred.resolve();
 	});
-	Storage.get("subscriptionsList").done(function(storage) {
+};
+
+exports.loadSubscriptionsList = function() {
+	return Storage.get("subscriptionsList").done(function(storage) {
 		subscriptionsList = ($.isArray(storage.subscriptionsList)) ? storage.subscriptionsList : [];
-		subscriptionsListInitDeferred.resolve();
 	});
 };
 
 exports.getSubscriptions = function() {
-	var deferred = $.Deferred();
-	
-	subscriptionsListInitDeferred.done(function() {
-		deferred.resolve(subscriptionsList);
-	});
-	
-	return deferred.promise();
+	return subscriptionsList;
 };
 
 exports.updateSubscriptions = function() {
 	var deferred = $.Deferred();
 	
-	channelsInitDeferred.done(function() { //TODO move checks to main.js
-		YoutubeApi.getSubscriptions().done(function(subs) {
-			var newSubsOrder = [];
-			var getChannelUploadsPlaylistDeferreds = [];
+	YoutubeApi.getSubscriptions().done(function(subs) {
+		var newSubsOrder = [];
+		var getChannelUploadsPlaylistDeferreds = [];
+		
+		$.each(subs, function(id, sub) { //assumes chrome gets keys in order added to object
+			newSubsOrder.push(id);
 			
-			$.each(subs, function(id, sub) { //assumes chrome gets keys in order added to object
-				newSubsOrder.push(id);
-				
-				if (!channels[id]) {
-					channels[id] = {
-						name: sub.name,
-						thumb: sub.thumb,
-						uploads: []
-					};
-					getChannelUploadsPlaylistDeferreds.push(YoutubeApi.getChannelUploadsPlaylist(id).done(function(playlistId) {
-						channels[id].uploadsPlaylist = playlistId;
-					}));
-				} else {
-					channels[id].name = sub.name;
-					channels[id].thumb = sub.thumb;
-				}
-			});
-			
-			subscriptionsList = newSubsOrder; //TODO filter + handle deleted subs
-			
-			Storage.set("subscriptionsList", newSubsOrder);
-			
-			$.when.apply($, getChannelUploadsPlaylistDeferreds).done(function() {
-				deferred.resolve(newSubsOrder);
-			});
+			if (!channels[id]) {
+				channels[id] = {
+					name: sub.name,
+					thumb: sub.thumb,
+					uploads: []
+				};
+				getChannelUploadsPlaylistDeferreds.push(YoutubeApi.getChannelUploadsPlaylist(id).done(function(playlistId) {
+					channels[id].uploadsPlaylist = playlistId;
+				}));
+			} else {
+				channels[id].name = sub.name;
+				channels[id].thumb = sub.thumb;
+			}
+		});
+		
+		subscriptionsList = newSubsOrder; //TODO filter + handle deleted subs
+		
+		Storage.set("subscriptionsList", newSubsOrder);
+		
+		$.when.apply($, getChannelUploadsPlaylistDeferreds).done(function() {
+			deferred.resolve(newSubsOrder);
 		});
 	});
 	
@@ -83,15 +74,13 @@ exports.updateSubscriptions = function() {
 exports.updateSubscriptionsUploads = function() {
 	var deferred = $.Deferred();
 	
-	$.when(channelsInitDeferred, subscriptionsListInitDeferred).done(function() { //TODO should i really be checking here
-		var promises = $.map(subscriptionsList, function(id, i) {
-			return updateChannelUploads(id);
-		});
-		
-		$.when.apply($, promises).done(function() {
-			deferred.resolve();
-			Storage.set("channels", channels);
-		});
+	var promises = $.map(subscriptionsList, function(id, i) {
+		return updateChannelUploads(id);
+	});
+	
+	$.when.apply($, promises).done(function() {
+		deferred.resolve();
+		Storage.set("channels", channels);
 	});
 	
 	return deferred.promise();
@@ -143,13 +132,7 @@ function getVideosData(videoIds) {
 }
 
 exports.isChannelLoaded = function(channelId) {
-	var deferred = $.Deferred();
-	
-	channelsInitDeferred.done(function() {
-		deferred.resolve(channels[channelId] != undefined); //TODO just use done/fail?
-	});
-	
-	return deferred.promise(); 
+	return channels[channelId] != undefined
 };
 
 exports.getChannelName = function(channelId) {

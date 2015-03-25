@@ -28,8 +28,8 @@ $(function() {
 	
 	if(Youtube.isLoggedIn()) {
 		hideLogin();
-		drawSubscriptions();
-		drawUploads();
+		displaySubscriptions();
+		displayCurrentView();
 	} else showLogin();
 	
 	//log in with UI when button is clicked
@@ -43,9 +43,11 @@ $(function() {
 function authorize() {
 	Youtube.authorize(true).done(function() {
 		hideLogin();
-		Youtube.updateSubscriptions().done(function() {
-			drawSubscriptions();
-			loadSubscriptionsUploads();
+		backgroundPage.loadSubscriptionsListPromise.done(function() {
+			Youtube.updateSubscriptions().done(function() {
+				displaySubscriptions();
+				backgroundPage.loadVideosPromise.done(loadSubscriptionsUploads);
+			});
 		});
 	}).fail(showLogin);
 }
@@ -58,20 +60,20 @@ function showLogin() {
 	$("#authorize-button").css("visibility", "");
 }
 
-function drawSubscriptions() {
+function displaySubscriptions() {
 	console.log("drawing subs"); //debugging
 	
-	Youtube.getSubscriptions().done(function(subsList) {
-		$.each(subsList, function(i, id) {
+	backgroundPage.loadSubscriptionsListPromise.done(function() {
+		$.each(Youtube.getSubscriptions(), function(i, id) {
 			var name = Youtube.getChannelName(id);
 			$("#subscriptions").append($("<li>").text(name).click(function() {
 				displayUploads(id);
 			}));
-		})
+		});
 	});
 }
 
-function drawUploads() {
+function displayCurrentView() {
 	if (currentView)
 		displayUploads(currentView);
 }
@@ -84,13 +86,13 @@ function loadSubscriptionsUploads() {
 		var elapsed = new Date()-start;
 		console.log(elapsed + "ms");
 		
-		drawUploads();
+		displayCurrentView();
 	});
 }
 
 function displayUploads(id) {
-	Youtube.isChannelLoaded(id).done(function(loaded) {
-		if (loaded) {
+	backgroundPage.loadVideosPromise.done(function(loaded) {
+		if (Youtube.isChannelLoaded(id)) {
 			var uploads = getChronologicalOrder(Youtube.getChannelUploads(id));
 			var thumb = Youtube.getChannelThumb(id);
 			var name = Youtube.getChannelName(id);

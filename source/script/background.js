@@ -8,7 +8,9 @@ window.$ = window.jquery = require("jquery");
 var Youtube = window.Youtube = require("./youtube.js");
 
 setTimeout(function() { Youtube.authorize(false); }, 1); //attempt to log in without UI TODO library doesn't do this
-Youtube.loadVideos();
+
+window.loadVideosPromise = Youtube.loadVideos();
+window.loadSubscriptionsListPromise = Youtube.loadSubscriptionsList();
 
 chrome.browserAction.onClicked.addListener(function(tab) {
 	var openTabs = chrome.extension.getViews({ type: "tab" });
