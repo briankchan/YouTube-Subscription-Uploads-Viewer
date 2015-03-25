@@ -8,7 +8,7 @@ module.exports = function(grunt) {
 		},
 		browserify: {
 			minifyify: {
-				src: "source/script/main.js",
+				src: "source/script/Viewer.js",
 				dest: "source/viewer.js",
 				options: {
 					plugin: [[
@@ -30,7 +30,7 @@ module.exports = function(grunt) {
 				}
 			},
 			debugViewer: {
-				src: "source/script/main.js",
+				src: "source/script/Viewer.js",
 				dest: "source/viewer.js",
 				options: {
 					browserifyOptions: {
@@ -39,7 +39,7 @@ module.exports = function(grunt) {
 				}
 			},
 			debugBg: {
-				src: "source/script/background.js",
+				src: "source/script/Background.js",
 				dest: "source/background.js",
 				options: {
 					browserifyOptions: {

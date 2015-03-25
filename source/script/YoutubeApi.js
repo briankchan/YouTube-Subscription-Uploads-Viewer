@@ -3,8 +3,8 @@
  * Authentication token needs to be set using setAuthToken before functions can be used.
  */
 
-var YoutubeResource = require("./youtube-resource.js");
-var VideoManager = require("./video-object-manager.js");
+var YoutubeResource = require("./YoutubeResource.js");
+var VideoManager = require("./VideoObjectManager.js");
 
 var channels = new YoutubeResource("channels");
 var playlistItems = new YoutubeResource("playlistItems");

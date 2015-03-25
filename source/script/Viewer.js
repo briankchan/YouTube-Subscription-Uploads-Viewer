@@ -9,7 +9,7 @@ var backgroundPage = chrome.extension.getBackgroundPage();
 var Youtube = window.Youtube = backgroundPage.Youtube;
 
 var HtmlLinkify = require("html-linkify");
-var VideoManager = require("./video-object-manager.js");
+var VideoManager = require("./VideoObjectManager.js");
 
 var currentView = localStorage.currentView;
 

@@ -5,7 +5,7 @@
 
 window.$ = window.jquery = require("jquery");
 
-var Youtube = window.Youtube = require("./youtube.js");
+var Youtube = window.Youtube = require("./Youtube.js");
 
 setTimeout(function() { Youtube.authorize(false); }, 1); //attempt to log in without UI TODO library doesn't do this
 

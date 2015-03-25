@@ -3,9 +3,9 @@
  * authorize() needs to be called before anything else can be used.
  */
 
-var YoutubeApi = require("./youtube-api.js");
-var VideoManager = require("./video-object-manager.js");
-var Storage = require("./storage.js");
+var YoutubeApi = require("./YoutubeApi.js");
+var VideoManager = require("./VideoObjectManager.js");
+var Storage = require("./Storage.js");
 
 var channels;
 var subscriptionsList;
