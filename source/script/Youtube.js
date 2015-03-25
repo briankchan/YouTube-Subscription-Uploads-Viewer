@@ -19,14 +19,14 @@ exports.isLoggedIn = function() {
 };
 
 exports.loadVideos = function() {
-	return Storage.get("channels").done(function(storage) {
-		channels = exports.channels = (typeof storage.channels === "object") ? storage.channels : {}; //debugging (exporting subs)
+	return Storage.get("channels").done(function(value) {
+		channels = exports.channels = (typeof value === "object") ? value : {}; //debugging (exporting subs)
 	});
 };
 
 exports.loadSubscriptionsList = function() {
-	return Storage.get("subscriptionsList").done(function(storage) {
-		subscriptionsList = ($.isArray(storage.subscriptionsList)) ? storage.subscriptionsList : [];
+	return Storage.get("subscriptionsList").done(function(value) {
+		subscriptionsList = ($.isArray(value)) ? value : [];
 	});
 };
 

@@ -9,7 +9,7 @@ exports.get = function(key) {
 		if(chrome.runtime.lastError)
 			deferred.reject(chrome.runtime.lastError.string);
 		else
-			deferred.resolve(value);
+			deferred.resolve(value[key]);
 	});
 	
 	return deferred.promise();
