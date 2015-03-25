@@ -53,11 +53,13 @@ function authorize() {
 }
 
 function hideLogin() {
-	$("#authorize-button").css("visibility", "hidden");
+	$("#authorize-button").hide();
+	$("#refresh-button").show();
 }
 
 function showLogin() {
-	$("#authorize-button").css("visibility", "");
+	$("#authorize-button").show();
+	$("#refresh-button").hide();
 }
 
 function displaySubscriptions() {
@@ -82,10 +84,13 @@ function loadSubscriptionsUploads() {
 	console.log("loading videos"); //debugging
 	var start = new Date();
 	
+	$("#refresh-button").prop("disabled", true);
+	
 	Youtube.updateSubscriptionsUploads().done(function() {
 		var elapsed = new Date()-start;
 		console.log(elapsed + "ms");
 		
+		$("#refresh-button").prop("disabled", false);
 		displayCurrentView();
 	});
 }

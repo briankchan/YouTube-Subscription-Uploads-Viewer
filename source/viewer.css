@@ -71,6 +71,10 @@ ul {
 	float: right;
 }
 
+#refresh-button {
+	display: none;
+}
+
 
 .vid {
 	margin: 10px 0;
