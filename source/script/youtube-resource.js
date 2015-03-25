@@ -37,18 +37,18 @@ function sendRequest(resource, method, options, authenticated) {
 	}
 	
 	$.ajax(settings).fail(function(jqXHR, textStatus, errorThrown) {
-		console.error(textStatus + " " + errorThrown + " trying to access YouTube Data API");
 		
-		if(errorThrown == "500" && textStatus == "OK") { //try again for 500 OK errors
-			console.debug("trying again"); //debugging
+		if(jqXHR.status == 500 && errorThrown == "OK") { //try again for 500 OK errors
 			$.ajax(settings).fail(function(jqXHR, textStatus, errorThrown) {
-				console.error(textStatus + " " + errorThrown + " trying to access YouTube Data API (again)");
 				deferred.reject(textStatus, errorThrown);
+				window.jqXHR = jqXHR; //debugging
 			}).done(function(data, textStatus, jqXHR) {
 				deferred.resolve(data);
+				console.debug("second attempt succeeded"); //debugging
 			});
 		} else {
 			deferred.reject(textStatus, errorThrown);
+			window.jqXHR = jqXHR; //debugging
 		}
 	}).done(function(data, textStatus, jqXHR) {
 		deferred.resolve(data);
