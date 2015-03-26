@@ -7,6 +7,7 @@ window.$ = window.jquery = require("jquery");
 var backgroundPage = chrome.extension.getBackgroundPage();
 
 var Youtube = window.Youtube = backgroundPage.Youtube;
+var User = backgroundPage.User;
 
 var HtmlLinkify = require("html-linkify");
 var VideoManager = require("./VideoObjectManager.js");
@@ -24,12 +25,13 @@ $(function() {
 		}
 	});
 	
-	
+	backgroundPage.updateSubscriptionsPromise.done(function() {
+			displaySubscriptions();
+			backgroundPage.updateUploadsPromise.done(displayCurrentView);
+	});
 	
 	if(Youtube.isLoggedIn()) {
 		hideLogin();
-		displaySubscriptions();
-		displayCurrentView();
 	} else showLogin();
 	
 	//log in with UI when button is clicked
@@ -41,14 +43,8 @@ $(function() {
 });
 
 function authorize() {
-	Youtube.authorize(true).done(function() {
+	backgroundPage.authorize(true).done(function() {
 		hideLogin();
-		backgroundPage.loadSubscriptionsListPromise.done(function() {
-			Youtube.updateSubscriptions().done(function() {
-				displaySubscriptions();
-				backgroundPage.loadVideosPromise.done(loadSubscriptionsUploads);
-			});
-		});
 	}).fail(showLogin);
 }
 
@@ -65,7 +61,7 @@ function showLogin() {
 function displaySubscriptions() {
 	console.log("drawing subs"); //debugging
 	
-	backgroundPage.loadSubscriptionsListPromise.done(function() {
+	backgroundPage.updateSubscriptionsPromise.done(function() {
 		$.each(Youtube.getSubscriptions(), function(i, id) {
 			var name = Youtube.getChannelName(id);
 			$("#subscriptions").append($("<li>").text(name).click(function() {
@@ -86,7 +82,7 @@ function loadSubscriptionsUploads() {
 	
 	$("#refresh-button").prop("disabled", true);
 	
-	Youtube.updateSubscriptionsUploads().done(function() {
+	backgroundPage.updateSubscriptionsUploads().done(function() {
 		var elapsed = new Date()-start;
 		console.log(elapsed + "ms");
 		
@@ -96,7 +92,7 @@ function loadSubscriptionsUploads() {
 }
 
 function displayUploads(id) {
-	backgroundPage.loadVideosPromise.done(function(loaded) {
+	$.when(backgroundPage.updateSubscriptionsPromise, backgroundPage.loadUsersPromise).done(function(loaded) {
 		if (Youtube.isChannelLoaded(id)) {
 			var uploads = getChronologicalOrder(Youtube.getChannelUploads(id));
 			var thumb = Youtube.getChannelThumb(id);
@@ -105,7 +101,7 @@ function displayUploads(id) {
 			clearVideosPanel();
 			$(window).scrollTop(0);
 			$.each(uploads, function(i, video) {
-				$("#videos").append($("<li>").append(createVideoElement(video, name, thumb)));
+				$("#videos").append($("<li>").append(createVideoElement(video, name, thumb, id)));
 			});
 			localStorage.currentView = currentView = id;
 		} else console.error(id + " is not a valid loaded channel ID.");
@@ -116,15 +112,16 @@ function clearVideosPanel() {
 	$("#videos").empty();
 }
 
-function createVideoElement(video, uploaderName, uploaderThumb) {//TODO: move to new file
+function createVideoElement(video, uploaderName, uploaderThumb, uploaderId) {//TODO: move to new file
 	var id = VideoManager.getId(video);
 	
 	var videoElement = $("<div>", { class: "vid" });
 	var clickEvent = function() {
-		VideoManager.setWatched(video, true);
+		console.log("click");
+		User.setWatched(uploaderId, id);
 		videoElement.addClass("watched");
 	};
-	if (VideoManager.getWatched(video))
+	if (User.getWatched(uploaderId, id))
 		videoElement.addClass("watched");
 	
 	videoElement.append($("<div>", { class: "vidUploader" })

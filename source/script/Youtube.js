@@ -18,6 +18,10 @@ exports.isLoggedIn = function() {
 	return YoutubeApi.isLoggedIn();
 };
 
+exports.getUserId = function() {
+	return YoutubeApi.getUserId();
+};
+
 exports.loadVideos = function() {
 	return Storage.get("channels").done(function(value) {
 		channels = exports.channels = (typeof value === "object") ? value : {}; //debugging (exporting subs)

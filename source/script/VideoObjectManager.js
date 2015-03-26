@@ -3,7 +3,7 @@
  * Would be the video object itself if Chrome allowed saving of non-vanilla JavaScript objects.
  */
 
-exports.createNewVideo = function() { return [11]; };
+exports.createNewVideo = function() { return [10]; };
 
 exports.getId = function(video) { return video[0]; };
 exports.setId = function(video, id) { video[0] = id; };
@@ -34,6 +34,3 @@ exports.setDislikesCount = function(video, dislikes) { video[8] = dislikes; };
 
 exports.getCommentsCount = function(video) { return video[9]; };
 exports.setCommentsCount = function(video, comments) { video[9] = comments; };
-
-exports.getWatched = function(video) { return video[10]; };
-exports.setWatched = function(video, watched) { video[10] = watched; };

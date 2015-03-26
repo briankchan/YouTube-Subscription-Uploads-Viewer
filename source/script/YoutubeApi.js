@@ -65,6 +65,20 @@ exports.isLoggedIn = function() {
 	return auth.hasAccessToken() && !auth.isAccessTokenExpired();
 };
 
+exports.getUserId = function() {
+	var deferred = $.Deferred();
+	
+	channels.get({
+		mine: true,
+		part: "id",
+		fields: "items/id"
+	}).done(function(response) {
+		deferred.resolve(response.items.id);
+	});
+	
+	return deferred.promise();
+};
+
 exports.getSubscriptions = function() {
 	var deferred = $.Deferred();
 	
@@ -170,7 +184,6 @@ exports.getVideoDetails = function(videoIds) {
 			VideoManager.setLikesCount(video, parseInt(videoJSON.statistics.likeCount));
 			VideoManager.setDislikesCount(video, parseInt(videoJSON.statistics.dislikeCount));
 			VideoManager.setCommentsCount(video, parseInt(videoJSON.statistics.commentCount));
-			VideoManager.setWatched(video, false);
 			
 			videos.push(video);
 		});
