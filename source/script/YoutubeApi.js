@@ -73,7 +73,7 @@ exports.getUserId = function() {
 		part: "id",
 		fields: "items/id"
 	}).done(function(response) {
-		deferred.resolve(response.items.id);
+		deferred.resolve(response.items[0].id);
 	});
 	
 	return deferred.promise();
