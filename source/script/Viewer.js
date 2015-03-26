@@ -116,31 +116,34 @@ function createVideoElement(video, uploaderName, uploaderThumb, uploaderId) {//T
 	var id = VideoManager.getId(video);
 	
 	var videoElement = $("<div>", { class: "vid" });
-	var clickEvent = function() {
-		console.log("click");
+	var markWatched = function() {
 		User.setWatched(uploaderId, id);
 		videoElement.addClass("watched");
 	};
+	var markUnwatched = function() {
+		User.setUnwatched(uploaderId, id);
+		videoElement.removeClass("watched");
+	};
+	
 	if (User.getWatched(uploaderId, id))
 		videoElement.addClass("watched");
 	
 	videoElement.append($("<div>", { class: "vidUploader" })
-			.append(createVideoLink(id).click(clickEvent)
-				.append($("<img>", { src: uploaderThumb, width: "20", class: "vidUploaderImg" }))
-				.append($("<span>", { class: "vidUploaderName"}).text(uploaderName))
-			)
-		).append($("<div>", { class: "vidContent" })
-			.append($("<div>", { class: "vidImg" })
-				.append(createVideoLink(id).click(clickEvent)
-					.append($("<img>", { src: VideoManager.getThumbnail(video), width: "240" }))
-				)
-			).append($("<div>", { class: "vidText" })
-				.append($("<div>", { class: "vidTitle" })
-					.append(createVideoLink(id).click(clickEvent).text(VideoManager.getTitle(video)))
-				).append($("<div>", { class: "vidTime" }).text(new Date(VideoManager.getUploadTime(video)).toLocaleString()))
-				.append($("<div>", { class: "vidDesc" }).html(parseDescription(VideoManager.getDescription(video))))
-			)
-		);
+		.append(createVideoLink(id).click(markWatched)
+			.append($("<img>", { src: uploaderThumb, width: "20", class: "vidUploaderImg" }))
+			.append($("<span>", { class: "vidUploaderName"}).text(uploaderName))
+		)
+	).append($("<div>", { class: "vidImg" })
+		.append(createVideoLink(id).click(markWatched)
+			.append($("<img>", { src: VideoManager.getThumbnail(video), width: "240" }))
+		)
+	).append($("<div>", { class: "vidText" })
+		.append($("<div>", { class: "vidTitle" })
+			.append(createVideoLink(id).click(markWatched).text(VideoManager.getTitle(video)))
+		).append($("<div>", { class: "vidTime" }).text(new Date(VideoManager.getUploadTime(video)).toLocaleString()))
+		.append($("<div>", { class: "vidDesc" }).html(parseDescription(VideoManager.getDescription(video))))
+	).append($("<div>", { class: "vidMarkWatched" }).text("Mark watched").click(markWatched))
+	.append($("<div>", { class: "vidMarkUnwatched" }).text("Mark unwatched").click(markUnwatched));
 	return videoElement;
 }
 

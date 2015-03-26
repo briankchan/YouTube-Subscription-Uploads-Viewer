@@ -32,6 +32,17 @@ exports.setWatched = function(channelId, videoId) {
 	Storage.set("users", users);
 };
 
+exports.setUnwatched = function(channelId, videoId) {
+	var videos = user.watched[channelId];
+	if(videos) {
+		var i = videos.indexOf(videoId);
+		if(i >= 0) {
+			videos.splice(i, 1);
+			Storage.set("users", users);
+		}
+	}
+};
+
 exports.getWatched = function(channelId, videoId) {
 	var videos = user.watched[channelId];
 	return videos && videos.indexOf(videoId) >= 0;
