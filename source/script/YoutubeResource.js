@@ -6,7 +6,6 @@ module.exports = YoutubeResource;
 
 function YoutubeResource(resource, authenticated) {
 	this.resource = resource;
-	this.authenticated = (authenticated == true);
 }
 
 YoutubeResource.setAuthToken = function(token) {
@@ -18,10 +17,10 @@ YoutubeResource.prototype.post   = function(options) { return this.ajax("POST", 
 YoutubeResource.prototype.put    = function(options) { return this.ajax("PUT", options); };
 YoutubeResource.prototype.delete = function(options) { return this.ajax("DELETE", options); };
 YoutubeResource.prototype.ajax   = function(method, options) {
-	return sendRequest(this.resource, method, options, this.authenticated);
+	return sendRequest(this.resource, method, options);
 };
 
-function sendRequest(resource, method, options, authenticated) {
+function sendRequest(resource, method, options) {
 	var deferred = $.Deferred();
 	
 	var settings = {
@@ -30,7 +29,7 @@ function sendRequest(resource, method, options, authenticated) {
 		data: options
 	};
 	
-	if(authenticated) {
+	if(options.mine) { //assumes it will only need authentication if options.mine == true
 		settings.headers = { authorization: "Bearer " + YoutubeResource.authToken }
 	} else {
 		settings.data.key = API_KEY;

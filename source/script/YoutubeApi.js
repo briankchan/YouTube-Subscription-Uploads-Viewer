@@ -8,7 +8,7 @@ var VideoManager = require("./VideoObjectManager.js");
 
 var channels = new YoutubeResource("channels");
 var playlistItems = new YoutubeResource("playlistItems");
-var subscriptions = new YoutubeResource("subscriptions", true);
+var subscriptions = new YoutubeResource("subscriptions");
 var videos = new YoutubeResource("videos");
 
 var auth = new OAuth2("google", {
