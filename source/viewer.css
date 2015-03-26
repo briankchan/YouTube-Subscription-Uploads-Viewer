@@ -62,7 +62,7 @@ ul {
 	position: relative;
 	left: 250px;
 	top: 50px;
-	width: calc(100% - 300px);
+	width: calc(100% - 250px);
 	height: calc(100% - 50px);
 	padding: 0 15px;
 }
@@ -90,8 +90,8 @@ ul {
 
 .vidMarkWatched, .vidMarkUnwatched {
 	position: absolute;
-	top: 5px;
-	right: 5px;
+	top: 10px;
+	right: 10px;
 	
 	cursor: pointer;
 }
@@ -130,7 +130,7 @@ ul {
 .vidText {
 	float: left;
 	width: calc(100% - 240px);
-	padding-left: 10px;
+	padding-left: 15px;
 }
 
 .vidTitle {
