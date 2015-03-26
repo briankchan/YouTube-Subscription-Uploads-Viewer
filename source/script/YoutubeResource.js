@@ -37,7 +37,7 @@ function sendRequest(resource, method, options) {
 	
 	$.ajax(settings).fail(function(jqXHR, textStatus, errorThrown) {
 		
-		if(jqXHR.status == 500 && errorThrown == "OK") { //try again for 500 OK errors
+		if(jqXHR.status == 500 /*&& errorThrown == "OK"*/) { //try again for 500 OK errors
 			$.ajax(settings).fail(function(jqXHR, textStatus, errorThrown) {
 				deferred.reject(textStatus, errorThrown);
 				window.jqXHR = jqXHR; //debugging
