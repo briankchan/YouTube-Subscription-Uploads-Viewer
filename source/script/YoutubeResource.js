@@ -2,6 +2,8 @@
 var BASE_URL = "https://www.googleapis.com/youtube/v3/";
 var API_KEY = "AIzaSyClOj2RmQTkYbfqL4o8mBhzx8Jwo-mNhpo";
 
+var authToken;
+
 module.exports = YoutubeResource;
 
 function YoutubeResource(resource, authenticated) {
@@ -9,7 +11,7 @@ function YoutubeResource(resource, authenticated) {
 }
 
 YoutubeResource.setAuthToken = function(token) {
-	YoutubeResource.authToken = token;
+	authToken = token;
 };
 
 YoutubeResource.prototype.get    = function(options) { return this.ajax("GET", options); };
@@ -30,7 +32,7 @@ function sendRequest(resource, method, options) {
 	};
 	
 	if(options.mine) { //assumes it will only need authentication if options.mine == true
-		settings.headers = { authorization: "Bearer " + YoutubeResource.authToken }
+		settings.headers = { authorization: "Bearer " + authToken }
 	} else {
 		settings.data.key = API_KEY;
 	}
