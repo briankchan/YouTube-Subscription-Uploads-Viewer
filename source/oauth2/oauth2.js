@@ -423,7 +423,7 @@ OAuth2.prototype.authorize = function(callback) {
           newData.accessTokenDate = new Date().valueOf();
           newData.accessToken = at;
           newData.expiresIn = exp;
-          newData.refreshToken = re;
+          if(re) newData.refreshToken = re;
           that.setSource(newData);
           // Callback when we finish refreshing
           if (callback) {
