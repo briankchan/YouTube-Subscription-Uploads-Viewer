@@ -19,7 +19,15 @@ exports.isLoggedIn = function() {
 };
 
 exports.getUserId = function() {
-	return YoutubeApi.getUserId();
+	var deferred = $.Deferred();
+	
+	YoutubeApi.authorize().done(function() {
+		YoutubeApi.getUserId().done(function(userId) {
+			deferred.resolve(userId);
+		});
+	});
+	
+	return deferred;
 };
 
 exports.loadVideos = function() {
@@ -41,34 +49,36 @@ exports.getSubscriptions = function() {
 exports.updateSubscriptions = function() {
 	var deferred = $.Deferred();
 	
-	YoutubeApi.getSubscriptions().done(function(subs) {
-		var newSubsOrder = [];
-		var getChannelUploadsPlaylistDeferreds = [];
-		
-		$.each(subs, function(id, sub) { //assumes chrome gets keys in order added to object
-			newSubsOrder.push(id);
+	YoutubeApi.authorize().done(function() {
+		YoutubeApi.getSubscriptions().done(function(subs) {
+			var newSubsOrder = [];
+			var getChannelUploadsPlaylistDeferreds = [];
 			
-			if (!channels[id]) {
-				channels[id] = {
-					name: sub.name,
-					thumb: sub.thumb,
-					uploads: []
-				};
-				getChannelUploadsPlaylistDeferreds.push(YoutubeApi.getChannelUploadsPlaylist(id).done(function(playlistId) {
-					channels[id].uploadsPlaylist = playlistId;
-				}));
-			} else {
-				channels[id].name = sub.name;
-				channels[id].thumb = sub.thumb;
-			}
-		});
-		
-		subscriptionsList = newSubsOrder; //TODO filter + handle deleted subs
-		
-		Storage.set("subscriptionsList", newSubsOrder);
-		
-		$.when.apply($, getChannelUploadsPlaylistDeferreds).done(function() {
-			deferred.resolve(newSubsOrder);
+			$.each(subs, function(id, sub) { //assumes chrome gets keys in order added to object
+				newSubsOrder.push(id);
+				
+				if (!channels[id]) {
+					channels[id] = {
+						name: sub.name,
+						thumb: sub.thumb,
+						uploads: []
+					};
+					getChannelUploadsPlaylistDeferreds.push(YoutubeApi.getChannelUploadsPlaylist(id).done(function(playlistId) {
+						channels[id].uploadsPlaylist = playlistId;
+					}));
+				} else {
+					channels[id].name = sub.name;
+					channels[id].thumb = sub.thumb;
+				}
+			});
+			
+			subscriptionsList = newSubsOrder; //TODO filter + handle deleted subs
+			
+			Storage.set("subscriptionsList", newSubsOrder);
+			
+			$.when.apply($, getChannelUploadsPlaylistDeferreds).done(function() {
+				deferred.resolve(newSubsOrder);
+			});
 		});
 	});
 	

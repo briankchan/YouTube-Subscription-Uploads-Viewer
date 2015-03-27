@@ -12,25 +12,26 @@ var authorizeDeferred = $.Deferred();
 var updateSubscriptionsDeferred = $.Deferred();
 var updateUploadsDeferred = $.Deferred();
 
-setTimeout(function() { Youtube.authorize(false); }, 1); //attempt to log in without UI TODO library doesn't do this
-
 window.authorizePromise = authorizeDeferred.promise();
-window.loadVideosPromise = Youtube.loadVideos();
+window.loadVideosPromise = Youtube.loadVideos(); //TODO do these actually need to be exposed
 window.loadSubscriptionsListPromise = Youtube.loadSubscriptionsList();
 window.loadUsersPromise = User.loadUsers();
 window.updateSubscriptionsPromise = updateSubscriptionsDeferred.promise();
 window.updateUploadsPromise = updateUploadsDeferred.promise();
 
-loadUsersPromise.done(function() {
-	if(Youtube.isLoggedIn()) {
+if(Youtube.isLoggedIn()) {
+	console.log("logged in");
+	authorizeDeferred.resolve();
+} else console.log("not logged in");
+
+authorizeDeferred.done(function() {
+	loadUsersPromise.done(function() {
 		Youtube.getUserId().done(function(userId) {
 			User.setUser(userId);
 		});
-	}
-});
-
-loadSubscriptionsListPromise.done(function() {
-	if(Youtube.isLoggedIn()) {
+	});
+	
+	loadSubscriptionsListPromise.done(function() {
 		Youtube.updateSubscriptions().done(function() {
 			updateSubscriptionsDeferred.resolve();
 			
@@ -40,7 +41,7 @@ loadSubscriptionsListPromise.done(function() {
 				});
 			});
 		});
-	}
+	});
 });
 
 chrome.browserAction.onClicked.addListener(function(tab) {
@@ -61,23 +62,6 @@ chrome.browserAction.onClicked.addListener(function(tab) {
 window.authorize = function(interactive) { 
 	return Youtube.authorize(interactive).done(function() {
 		authorizeDeferred.resolve();
-		loadUsersPromise.done(function() {
-			Youtube.getUserId().done(function(userId) {
-				User.setUser(userId);
-			});
-		});
-		
-		loadSubscriptionsListPromise.done(function() {
-			Youtube.updateSubscriptions().done(function() {
-				updateSubscriptionsDeferred.resolve();
-				
-				loadVideosPromise.done(function() {
-					Youtube.updateSubscriptionsUploads().done(function() {
-						updateUploadsDeferred.resolve();
-					});
-				});
-			});
-		});
 	});
 };
 window.isLoggedIn = function() { return Youtube.isLoggedIn() };

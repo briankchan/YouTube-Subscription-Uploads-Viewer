@@ -11,24 +11,27 @@ var playlistItems = new YoutubeResource("playlistItems");
 var subscriptions = new YoutubeResource("subscriptions");
 var videos = new YoutubeResource("videos");
 
-var auth = new OAuth2("google", {
+//debugging
+var auth = window.auth = new OAuth2("google", {
 	client_id: "285678490171-1v3db8vbi7108iukl35ojiub87ja50s7.apps.googleusercontent.com",
 	client_secret: "m7ozSCV_hGNTXKwR_aW_7q5O",
 	api_scope: "https://www.googleapis.com/auth/youtube.readonly"
 });
+updateAuthToken();
 
-exports.authorize = function(interactive) {
+exports.authorize = function() {
 	var deferred = $.Deferred();
 	
 	console.log("has token: " + auth.hasAccessToken());
 	console.log("is expired: " + auth.isAccessTokenExpired()); //debugging
-	window.auth = auth; //debugging
-	auth.authorize(function() {
-		var token = auth.getAccessToken();
-		YoutubeResource.setAuthToken(token);
-		console.log(token);  //debugging
+	if(!auth.hasAccessToken() || auth.isAccessTokenExpired()) {
+		auth.authorize(function() {
+			updateAuthToken();
+			deferred.resolve();
+		});
+	} else {
 		deferred.resolve();
-	});
+	}
 	
 	//chrome.identity.launchWebAuthFlow({
 	//	url: "https://accounts.google.com/o/oauth2/authentication?response_type=code" +
@@ -61,8 +64,14 @@ exports.authorize = function(interactive) {
 	return deferred.promise();
 };
 
+function updateAuthToken() {
+	var token = auth.getAccessToken();
+	YoutubeResource.setAuthToken(token);
+	console.log(token);  //debugging
+}
+
 exports.isLoggedIn = function() {
-	return auth.hasAccessToken() && !auth.isAccessTokenExpired();
+	return auth.hasAccessToken();
 };
 
 exports.getUserId = function() {
