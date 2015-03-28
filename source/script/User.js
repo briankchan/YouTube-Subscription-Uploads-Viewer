@@ -62,5 +62,5 @@ exports.getWatched = function(channelId, videoId) {
 
 exports.getWatchedVideos = function(channelId) {
 	var videos = user.watched[channelId];
-	return (videos) ? videos : [];
+	return (videos) ? $.merge([], videos) : [];
 };

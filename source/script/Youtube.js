@@ -74,7 +74,9 @@ exports.updateChannelsUploads = function(channelIds) {
 	var deferred = $.Deferred();
 	
 	var promises = $.map(channelIds, function(id, i) {
-		return updateChannelUploads(id);
+		return updateChannelUploads(id).done(function() {
+			deferred.notify(id);
+		});
 	});
 	
 	$.when.apply($, promises).done(function() {
@@ -143,5 +145,5 @@ exports.getChannelThumb = function(channelId) {
 };
 
 exports.getChannelUploads = function(channelId) {
-	return channels[channelId].uploads;
+	return $.merge([], channels[channelId].uploads);
 };
