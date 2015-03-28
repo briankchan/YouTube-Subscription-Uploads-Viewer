@@ -51,11 +51,18 @@ ul {
 	overflow: auto;
 }
 
-#subscriptions>li {
+.channel {
+	cursor: pointer;
+}
+
+.channelName {
 	white-space: nowrap;
 	text-overflow: ellipsis;
 	overflow: hidden;
-	cursor: pointer;
+}
+
+.channelUnwatched {
+	float: right;
 }
 
 #content {

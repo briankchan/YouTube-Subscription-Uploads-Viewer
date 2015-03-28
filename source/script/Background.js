@@ -38,6 +38,8 @@ authorizeDeferred.done(function() {
 			loadVideosPromise.done(function() {
 				Youtube.updateChannelsUploads(subsList).done(function() {
 					updateUploadsDeferred.resolve();
+				}).progress(function(channelId) {
+					$(window).trigger("channelUpdate" + channelId);
 				});
 			});
 		});
@@ -66,7 +68,9 @@ window.authorize = function() {
 };
 window.isLoggedIn = function() { return Youtube.isLoggedIn() };
 window.updateUploads = function() {
-	return Youtube.updateChannelsUploads(User.getSubscriptions());
+	return Youtube.updateChannelsUploads(User.getSubscriptions()).progress(function(channelId) {
+		dispatchEvent(new Event("channelUpdate" + channelId));
+	});
 };
 window.isChannelLoaded = function(channelId) { return Youtube.isChannelLoaded(channelId) };
 window.getChannelName = function(channelId) { return Youtube.getChannelName(channelId) };
@@ -77,3 +81,4 @@ window.getSubscriptions = function() { return User.getSubscriptions() };
 window.setWatched = function(channelId, videoId) { User.setWatched(channelId, videoId) };
 window.setUnwatched = function(channelId, videoId) { User.setUnwatched(channelId, videoId) };
 window.getWatched = function(channelId, videoId) { return User.getWatched(channelId, videoId) };
+window.getWatchedVideos = function(channelId) { return User.getWatchedVideos(channelId) };

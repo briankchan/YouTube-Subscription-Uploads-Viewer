@@ -52,9 +52,41 @@ function displaySubscriptions() {
 	backgroundPage.updateSubscriptionsPromise.done(function() {
 		$.each(backgroundPage.getSubscriptions(), function(i, id) {
 			var name = backgroundPage.getChannelName(id);
-			$("#subscriptions").append($("<li>").text(name).click(function() {
-				displayUploads(id);
-			}));
+			
+			var label = $("<div>", { class: "channelName" }).text(name);
+			var counter = $("<div>", { class: "channelUnwatched" });
+			
+			var updateCounter = function(event, amount) {
+				if(amount) {
+					var text = counter.text();
+					if(text == "") {
+						counter.text(amount);
+					} else {
+						counter.text(parseInt(counter.text(), 10) + amount);
+					}
+				} else {
+					var watched = backgroundPage.getWatchedVideos(id);
+					
+					counter.text($.grep(backgroundPage.getChannelUploads(id), function(vid, i) {
+						return watched.indexOf(VideoManager.getId(vid)) < 0;
+					}).length);
+				}
+			};
+			
+			$(window).on("channelUpdate" + id, updateCounter);
+			$(backgroundPage).on("channelUpdate" + id, updateCounter);
+			
+			if(backgroundPage.isLoggedIn()) updateCounter();
+			
+			$("#subscriptions").append($("<li>")
+					.append($("<div>", { class: "channel" })
+							.append(counter) //order flipped for css reasons
+							.append(label)
+							.click(function() {
+								displayUploads(id);
+							})
+					)
+			);
 		});
 	});
 }
@@ -100,26 +132,30 @@ function clearVideosPanel() {
 	$("#videos").empty();
 }
 
-function createVideoElement(video, uploaderName, uploaderThumb, uploaderId) {//TODO: move to new file
+function createVideoElement(video, channelName, channelThumb, channelId) {//TODO: move to new file
 	var id = VideoManager.getId(video);
 	
 	var videoElement = $("<div>", { class: "vid" });
 	var markWatched = function() {
-		backgroundPage.setWatched(uploaderId, id);
+		$(window).trigger("channelUpdate" + channelId, -1);
+		
 		videoElement.addClass("watched");
+		backgroundPage.setWatched(channelId, id);
 	};
 	var markUnwatched = function() {
-		backgroundPage.setUnwatched(uploaderId, id);
+		$(window).trigger("channelUpdate" + channelId, 1); //TODO move to background page for other viewers
+		
 		videoElement.removeClass("watched");
+		backgroundPage.setUnwatched(channelId, id);
 	};
 	
-	if (backgroundPage.getWatched(uploaderId, id))
+	if (backgroundPage.getWatched(channelId, id))
 		videoElement.addClass("watched");
 	
 	videoElement.append($("<div>", { class: "vidUploader" })
-		.append(createChannelLink(uploaderId)
-			.append($("<img>", { src: uploaderThumb, width: "20", class: "vidUploaderImg" }))
-			.append($("<span>", { class: "vidUploaderName"}).text(uploaderName))
+		.append(createChannelLink(channelId)
+			.append($("<img>", { src: channelThumb, width: "20", class: "vidUploaderImg" }))
+			.append($("<span>", { class: "vidUploaderName"}).text(channelName))
 		)
 	).append($("<div>", { class: "vidImg" })
 		.append(createVideoLink(id).click(markWatched)
