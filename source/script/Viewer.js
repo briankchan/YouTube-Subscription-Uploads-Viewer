@@ -51,9 +51,10 @@ function displaySubscriptions() {
 	
 	backgroundPage.updateSubscriptionsPromise.done(function() {
 		$.each(backgroundPage.getSubscriptions(), function(i, id) {
-			var name = backgroundPage.getChannelName(id);
 			
-			var label = $("<div>", { class: "channelName" }).text(name);
+			var label = $("<div>", { class: "channelLabel" })
+					.append($("<img>", { src: backgroundPage.getChannelThumb(id), width: "20", class: "channelThumb" }))
+					.append($("<span>", { class: "channelName"}).text(backgroundPage.getChannelName(id)));
 			var counter = $("<div>", { class: "channelUnwatched" });
 			
 			var updateCounter = function(event, amount) {
