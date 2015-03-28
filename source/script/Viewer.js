@@ -53,7 +53,7 @@ function displaySubscriptions() {
 		$.each(backgroundPage.getSubscriptions(), function(i, id) {
 			
 			var label = $("<div>", { class: "channelLabel" })
-					.append($("<img>", { src: backgroundPage.getChannelThumb(id), width: "20", class: "channelThumb" }))
+					.append($("<img>", { src: backgroundPage.getChannelThumb(id), class: "channelThumb" }))
 					.append($("<span>", { class: "channelName"}).text(backgroundPage.getChannelName(id)));
 			var counter = $("<div>", { class: "channelUnwatched" });
 			
@@ -155,7 +155,7 @@ function createVideoElement(video, channelName, channelThumb, channelId) {//TODO
 	
 	videoElement.append($("<div>", { class: "vidUploader" })
 		.append(createChannelLink(channelId)
-			.append($("<img>", { src: channelThumb, width: "20", class: "vidUploaderImg" }))
+			.append($("<img>", { src: channelThumb, class: "vidUploaderImg" }))
 			.append($("<span>", { class: "vidUploaderName"}).text(channelName))
 		)
 	).append($("<div>", { class: "vidImg" })

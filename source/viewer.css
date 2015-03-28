@@ -62,6 +62,8 @@ ul {
 }
 .channelThumb {
 	margin: 3px 7px 3px 0;
+	width: 20px;
+	height: 20px;
 	vertical-align: middle;
 }
 .channelName {
@@ -130,6 +132,8 @@ ul {
 .vidUploaderImg {
 	margin-right: 10px;
 	vertical-align: middle;
+	width: 20px;
+	height: 20px;
 }
 .vidUploaderName {
 	vertical-align: middle;
