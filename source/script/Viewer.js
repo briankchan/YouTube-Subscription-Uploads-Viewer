@@ -117,7 +117,7 @@ function createVideoElement(video, uploaderName, uploaderThumb, uploaderId) {//T
 		videoElement.addClass("watched");
 	
 	videoElement.append($("<div>", { class: "vidUploader" })
-		.append(createVideoLink(id).click(markWatched)
+		.append(createChannelLink(uploaderId)
 			.append($("<img>", { src: uploaderThumb, width: "20", class: "vidUploaderImg" }))
 			.append($("<span>", { class: "vidUploaderName"}).text(uploaderName))
 		)
@@ -141,6 +141,10 @@ function parseDescription(text) {
 
 function createVideoLink(videoId) {
 	return $("<a>", { href: "https://www.youtube.com/watch?v="+videoId, target: "_blank" });
+}
+
+function createChannelLink(channelId) {
+	return $("<a>", { href: "https://www.youtube.com/channel/"+channelId, target: "_blank" });
 }
 
 function getChronologicalOrder(videos) {
