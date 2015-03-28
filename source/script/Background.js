@@ -14,7 +14,6 @@ var updateUploadsDeferred = $.Deferred();
 
 window.authorizePromise = authorizeDeferred.promise();
 window.loadVideosPromise = Youtube.loadVideos(); //TODO do these actually need to be exposed
-window.loadSubscriptionsListPromise = Youtube.loadSubscriptionsList();
 window.loadUsersPromise = User.loadUsers();
 window.updateSubscriptionsPromise = updateSubscriptionsDeferred.promise();
 window.updateUploadsPromise = updateUploadsDeferred.promise();
@@ -29,14 +28,14 @@ authorizeDeferred.done(function() {
 		Youtube.getUserId().done(function(userId) {
 			User.setUser(userId);
 		});
-	});
-	
-	loadSubscriptionsListPromise.done(function() {
-		Youtube.updateSubscriptions().done(function() {
+		
+		Youtube.getSubscriptions().done(function(subsList) {
+			User.setSubscriptions(subsList);
+			
 			updateSubscriptionsDeferred.resolve();
 			
 			loadVideosPromise.done(function() {
-				Youtube.updateSubscriptionsUploads().done(function() {
+				Youtube.updateChannelsUploads(subsList).done(function() {
 					updateUploadsDeferred.resolve();
 				});
 			});
@@ -67,10 +66,11 @@ window.authorize = function(interactive) {
 window.isLoggedIn = function() { return Youtube.isLoggedIn() };
 window.getUserId = function() { return Youtube.getUserId() };
 window.loadVideos = function() { return Youtube.loadVideos() };
-window.loadSubscriptionsList = function() { return Youtube.loadSubscriptionsList() };
 window.getSubscriptions = function() { return Youtube.getSubscriptions() };
-window.updateSubscriptions = function() { return Youtube.updateSubscriptions() };
-window.updateSubscriptionsUploads = function() { return Youtube.updateSubscriptionsUploads() };
+window.getSubscriptions = function() { return Youtube.getSubscriptions() };
+window.updateSubscriptionsUploads = function() {
+	return Youtube.updateChannelsUploads(User.getSubscriptions());
+};
 window.isChannelLoaded = function(channelId) { return Youtube.isChannelLoaded(channelId) };
 window.getChannelName = function(channelId) { return Youtube.getChannelName(channelId) };
 window.getChannelThumb = function(channelId) { return Youtube.getChannelThumb(channelId) };

@@ -62,7 +62,7 @@ function displaySubscriptions() {
 	console.log("drawing subs"); //debugging
 	
 	backgroundPage.updateSubscriptionsPromise.done(function() {
-		$.each(Youtube.getSubscriptions(), function(i, id) {
+		$.each(User.getSubscriptions(), function(i, id) {
 			var name = Youtube.getChannelName(id);
 			$("#subscriptions").append($("<li>").text(name).click(function() {
 				displayUploads(id);

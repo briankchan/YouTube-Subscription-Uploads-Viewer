@@ -4,6 +4,7 @@ var Storage = require("./Storage.js");
 var users;
 
 var user;
+var subscriptions;
 
 exports.loadUsers = function() {
 	return Storage.get("users").done(function(value) {
@@ -20,7 +21,17 @@ exports.setUser = function(id) {
 	user = users[id];
 };
 
-exports.setWatched = function(channelId, videoId) {
+exports.setSubscriptions = function(subs) {
+	user.subscriptions = subs; //TODO filter + handle deleted subs
+	
+	Storage.set("users", users);
+};
+
+exports.getSubscriptions = function() {
+	return user.subscriptions;
+};
+
+exports.setWatched = function(channelId, videoId) { //TODO make sure it's not already in the list
 	if(!user.watched[channelId]) {
 		user.watched[channelId] = [];
 	}

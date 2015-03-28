@@ -8,7 +8,6 @@ var VideoManager = require("./VideoObjectManager.js");
 var Storage = require("./Storage.js");
 
 var channels;
-var subscriptionsList;
 
 exports.authorize = function(interactive) {
 	return YoutubeApi.authorize(interactive);
@@ -36,17 +35,7 @@ exports.loadVideos = function() {
 	});
 };
 
-exports.loadSubscriptionsList = function() {
-	return Storage.get("subscriptionsList").done(function(value) {
-		subscriptionsList = ($.isArray(value)) ? value : [];
-	});
-};
-
 exports.getSubscriptions = function() {
-	return subscriptionsList;
-};
-
-exports.updateSubscriptions = function() {
 	var deferred = $.Deferred();
 	
 	YoutubeApi.authorize().done(function() {
@@ -72,10 +61,6 @@ exports.updateSubscriptions = function() {
 				}
 			});
 			
-			subscriptionsList = newSubsOrder; //TODO filter + handle deleted subs
-			
-			Storage.set("subscriptionsList", newSubsOrder);
-			
 			$.when.apply($, getChannelUploadsPlaylistDeferreds).done(function() {
 				deferred.resolve(newSubsOrder);
 			});
@@ -85,10 +70,10 @@ exports.updateSubscriptions = function() {
 	return deferred.promise();
 };
 
-exports.updateSubscriptionsUploads = function() {
+exports.updateChannelsUploads = function(channelIds) {
 	var deferred = $.Deferred();
 	
-	var promises = $.map(subscriptionsList, function(id, i) {
+	var promises = $.map(channelIds, function(id, i) {
 		return updateChannelUploads(id);
 	});
 	
