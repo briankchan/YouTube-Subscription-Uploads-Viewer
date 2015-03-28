@@ -6,9 +6,6 @@ window.$ = window.jquery = require("jquery");
 
 var backgroundPage = chrome.extension.getBackgroundPage();
 
-var Youtube = window.Youtube = backgroundPage.Youtube;
-var User = backgroundPage.User;
-
 var HtmlLinkify = require("html-linkify");
 var VideoManager = require("./VideoObjectManager.js");
 
@@ -30,7 +27,7 @@ $(function() {
 			backgroundPage.updateUploadsPromise.done(displayCurrentView);
 	});
 	
-	if(Youtube.isLoggedIn()) {
+	if(backgroundPage.isLoggedIn()) {
 		hideLogin();
 	} else showLogin();
 	
@@ -62,8 +59,8 @@ function displaySubscriptions() {
 	console.log("drawing subs"); //debugging
 	
 	backgroundPage.updateSubscriptionsPromise.done(function() {
-		$.each(User.getSubscriptions(), function(i, id) {
-			var name = Youtube.getChannelName(id);
+		$.each(backgroundPage.getSubscriptions(), function(i, id) {
+			var name = backgroundPage.getChannelName(id);
 			$("#subscriptions").append($("<li>").text(name).click(function() {
 				displayUploads(id);
 			}));
@@ -92,11 +89,11 @@ function loadSubscriptionsUploads() {
 }
 
 function displayUploads(id) {
-	$.when(backgroundPage.updateSubscriptionsPromise, backgroundPage.loadUsersPromise).done(function(loaded) {
-		if (Youtube.isChannelLoaded(id)) {
-			var uploads = getChronologicalOrder(Youtube.getChannelUploads(id));
-			var thumb = Youtube.getChannelThumb(id);
-			var name = Youtube.getChannelName(id);
+	backgroundPage.updateSubscriptionsPromise.done(function(loaded) {
+		if (backgroundPage.isChannelLoaded(id)) {
+			var uploads = getChronologicalOrder(backgroundPage.getChannelUploads(id));
+			var thumb = backgroundPage.getChannelThumb(id);
+			var name = backgroundPage.getChannelName(id);
 			
 			clearVideosPanel();
 			$(window).scrollTop(0);
@@ -117,15 +114,15 @@ function createVideoElement(video, uploaderName, uploaderThumb, uploaderId) {//T
 	
 	var videoElement = $("<div>", { class: "vid" });
 	var markWatched = function() {
-		User.setWatched(uploaderId, id);
+		backgroundPage.setWatched(uploaderId, id);
 		videoElement.addClass("watched");
 	};
 	var markUnwatched = function() {
-		User.setUnwatched(uploaderId, id);
+		backgroundPage.setUnwatched(uploaderId, id);
 		videoElement.removeClass("watched");
 	};
 	
-	if (User.getWatched(uploaderId, id))
+	if (backgroundPage.getWatched(uploaderId, id))
 		videoElement.addClass("watched");
 	
 	videoElement.append($("<div>", { class: "vidUploader" })

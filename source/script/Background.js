@@ -5,16 +5,17 @@
 
 window.$ = window.jquery = require("jquery");
 
-var Youtube = window.Youtube = require("./Youtube.js");
-var User = window.User = require("./User.js");
+var Youtube = require("./Youtube.js");
+var User = require("./User.js");
 
 var authorizeDeferred = $.Deferred();
 var updateSubscriptionsDeferred = $.Deferred();
 var updateUploadsDeferred = $.Deferred();
 
+var loadVideosPromise = Youtube.loadVideos(); //TODO do these actually need to be exposed
+var loadUsersPromise = User.loadUsers();
+
 window.authorizePromise = authorizeDeferred.promise();
-window.loadVideosPromise = Youtube.loadVideos(); //TODO do these actually need to be exposed
-window.loadUsersPromise = User.loadUsers();
 window.updateSubscriptionsPromise = updateSubscriptionsDeferred.promise();
 window.updateUploadsPromise = updateUploadsDeferred.promise();
 
@@ -64,10 +65,6 @@ window.authorize = function(interactive) {
 	});
 };
 window.isLoggedIn = function() { return Youtube.isLoggedIn() };
-window.getUserId = function() { return Youtube.getUserId() };
-window.loadVideos = function() { return Youtube.loadVideos() };
-window.getSubscriptions = function() { return Youtube.getSubscriptions() };
-window.getSubscriptions = function() { return Youtube.getSubscriptions() };
 window.updateSubscriptionsUploads = function() {
 	return Youtube.updateChannelsUploads(User.getSubscriptions());
 };
@@ -75,3 +72,8 @@ window.isChannelLoaded = function(channelId) { return Youtube.isChannelLoaded(ch
 window.getChannelName = function(channelId) { return Youtube.getChannelName(channelId) };
 window.getChannelThumb = function(channelId) { return Youtube.getChannelThumb(channelId) };
 window.getChannelUploads = function(channelId) { return Youtube.getChannelUploads(channelId) };
+
+window.getSubscriptions = function() { return User.getSubscriptions() };
+window.setWatched = function(channelId, videoId) { User.setWatched(channelId, videoId) };
+window.setUnwatched = function(channelId, videoId) { User.setUnwatched(channelId, videoId) };
+window.getWatched = function(channelId, videoId) { return User.getWatched(channelId, videoId) };
