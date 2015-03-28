@@ -93,17 +93,21 @@ function updateChannelUploads(channelId) {
 	var channel = channels[channelId];
 	
 	YoutubeApi.getPlaylistItems(channel.uploadsPlaylist).done(function(videoIds) {
-		//only get new videos
+		channel.uploads = $.grep(channel.uploads, function(video) { //remove deleted videos
+			return videoIds.indexOf(VideoManager.getId(video)) >= 0;
+		});
+		
 		var currentVideoIds = $.map(channel.uploads, function(video) {
 			return VideoManager.getId(video);
 		});
-		var newVideoIds = $.grep(videoIds, function(videoId) {
+		var newVideoIds = $.grep(videoIds, function(videoId) { //only get new videos
 			return currentVideoIds.indexOf(videoId) < 0;
 		});
 		
 		getVideosData(newVideoIds).done(function(videos) {
 			if(videos)
-				$.merge(channel.uploads, videos);
+				channel.uploads = $.merge(videos, channel.uploads);
+			
 			deferred.resolve();
 		});
 	});
