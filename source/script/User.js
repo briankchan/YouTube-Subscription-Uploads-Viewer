@@ -31,16 +31,18 @@ exports.getSubscriptions = function() {
 	return user.subscriptions;
 };
 
-exports.setWatched = function(channelId, videoId) { //TODO make sure it's not already in the list
-	if(!user.watched[channelId]) {
-		user.watched[channelId] = [];
+exports.setWatched = function(channelId, videoId) {
+	if(!getWatched(channelId, videoId)) {
+		if (!user.watched[channelId]) {
+			user.watched[channelId] = [];
+		}
+		var videos = user.watched[channelId];
+		videos.push(videoId);
+		if (videos.length > 100)
+			videos.shift();
+		
+		Storage.set("users", users);
 	}
-	var videos = user.watched[channelId];
-	videos.push(videoId);
-	if(videos.length > 100)
-		videos.shift();
-	
-	Storage.set("users", users);
 };
 
 exports.setUnwatched = function(channelId, videoId) {
