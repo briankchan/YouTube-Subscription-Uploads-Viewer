@@ -33,7 +33,7 @@ $(function() {
 	
 	$("#refresh-button").click(updateUploads);
 	
-	$("#reload-extension-button").click(chrome.runtime.reload); //debugging (reload ext. button)
+	$("#reload-extension-button").click(function() { chrome.runtime.reload() }); //debugging (reload ext. button)
 });
 
 function hideLogin() {
