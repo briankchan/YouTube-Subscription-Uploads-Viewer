@@ -173,7 +173,7 @@ function createVideoElement(video, channelName, channelThumb, channelId) {//TODO
 }
 
 function parseDescription(text) {
-	return HtmlLinkify(text.replace(/\n/g, "<br />"), { escape: false });
+	return HtmlLinkify(text.replace(/\n/g, "<br />"), { attributes: { target: "_blank" }, escape: false });
 }
 
 function createVideoLink(videoId) {
