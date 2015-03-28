@@ -4,7 +4,6 @@ var Storage = require("./Storage.js");
 var users;
 
 var user;
-var subscriptions;
 
 exports.loadUsers = function() {
 	return Storage.get("users").done(function(value) {

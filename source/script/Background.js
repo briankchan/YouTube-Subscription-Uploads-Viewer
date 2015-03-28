@@ -12,7 +12,7 @@ var authorizeDeferred = $.Deferred();
 var updateSubscriptionsDeferred = $.Deferred();
 var updateUploadsDeferred = $.Deferred();
 
-var loadVideosPromise = Youtube.loadVideos(); //TODO do these actually need to be exposed
+var loadVideosPromise = Youtube.loadUploads(); //TODO do these actually need to be exposed
 var loadUsersPromise = User.loadUsers();
 
 window.authorizePromise = authorizeDeferred.promise();
@@ -45,12 +45,12 @@ authorizeDeferred.done(function() {
 });
 
 chrome.browserAction.onClicked.addListener(function(tab) {
-	var openTabs = chrome.extension.getViews({ type: "tab" });
+	var viewers = chrome.extension.getViews({ type: "tab" });
 	
-	if(openTabs.length < 1) {
+	if(viewers.length < 1) {
 		chrome.tabs.create({ url: "viewer.html" });
 	} else {
-		openTabs[0].chrome.tabs.getCurrent(function(tab){
+		viewers[0].chrome.tabs.getCurrent(function(tab){
 			chrome.tabs.update(tab.id, { highlighted: true });
 			chrome.tabs.get(tab.id, function(tab) {
 				chrome.windows.update(tab.windowId, { focused: true });
@@ -59,13 +59,13 @@ chrome.browserAction.onClicked.addListener(function(tab) {
 	}
 });
 
-window.authorize = function(interactive) { 
-	return Youtube.authorize(interactive).done(function() {
+window.authorize = function() { 
+	return Youtube.authorize().done(function() {
 		authorizeDeferred.resolve();
 	});
 };
 window.isLoggedIn = function() { return Youtube.isLoggedIn() };
-window.updateSubscriptionsUploads = function() {
+window.updateUploads = function() {
 	return Youtube.updateChannelsUploads(User.getSubscriptions());
 };
 window.isChannelLoaded = function(channelId) { return Youtube.isChannelLoaded(channelId) };

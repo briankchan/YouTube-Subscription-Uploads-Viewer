@@ -27,23 +27,14 @@ $(function() {
 			backgroundPage.updateUploadsPromise.done(displayCurrentView);
 	});
 	
-	if(backgroundPage.isLoggedIn()) {
-		hideLogin();
-	} else showLogin();
+	backgroundPage.authorizePromise.done(hideLogin).fail(showLogin); //TODO use events
 	
-	//log in with UI when button is clicked
-	$("#authorize-button").click(function() { authorize(); });
+	$("#authorize-button").click(backgroundPage.authorize);
 	
-	$("#refresh-button").click(function() { loadSubscriptionsUploads(); });
+	$("#refresh-button").click(updateUploads);
 	
-	$("#reload-extension-button").click(function() { chrome.runtime.reload(); }); //debugging (reload ext. button)
+	$("#reload-extension-button").click(chrome.runtime.reload); //debugging (reload ext. button)
 });
-
-function authorize() {
-	backgroundPage.authorize(true).done(function() {
-		hideLogin();
-	}).fail(showLogin);
-}
 
 function hideLogin() {
 	$("#authorize-button").hide();
@@ -73,13 +64,13 @@ function displayCurrentView() {
 		displayUploads(currentView);
 }
 
-function loadSubscriptionsUploads() {
+function updateUploads() {
 	console.log("loading videos"); //debugging
 	var start = new Date();
 	
 	$("#refresh-button").prop("disabled", true);
 	
-	backgroundPage.updateSubscriptionsUploads().done(function() {
+	backgroundPage.updateUploads().done(function() {
 		var elapsed = new Date()-start;
 		console.log(elapsed + "ms");
 		

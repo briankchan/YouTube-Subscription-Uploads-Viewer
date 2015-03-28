@@ -9,8 +9,8 @@ var Storage = require("./Storage.js");
 
 var channels;
 
-exports.authorize = function(interactive) {
-	return YoutubeApi.authorize(interactive);
+exports.authorize = function() {
+	return YoutubeApi.authorize();
 };
 
 exports.isLoggedIn = function() {
@@ -29,7 +29,7 @@ exports.getUserId = function() {
 	return deferred;
 };
 
-exports.loadVideos = function() {
+exports.loadUploads = function() {
 	return Storage.get("channels").done(function(value) {
 		channels = exports.channels = (typeof value === "object") ? value : {}; //debugging (exporting subs)
 	});
