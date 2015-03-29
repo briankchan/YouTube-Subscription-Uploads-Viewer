@@ -77,7 +77,7 @@ function displaySubscriptions() {
 			$(window).on("channelUpdate" + id, updateCounter);
 			$(backgroundPage).on("channelUpdate" + id, updateCounter);
 			
-			if(backgroundPage.isLoggedIn()) updateCounter();
+			if(backgroundPage.isLoggedIn()) updateCounter(); //TODO check if subscriptions loaded instead?
 			
 			$("#subscriptions").append($("<li>")
 					.append($("<div>", { class: "channel" })
@@ -161,6 +161,7 @@ function createVideoElement(video, channelName, channelThumb, channelId) {//TODO
 	).append($("<div>", { class: "vidImg" })
 		.append(createVideoLink(id).click(markWatched)
 			.append($("<img>", { src: VideoManager.getThumbnail(video), width: "240" }))
+			.append($("<div>", { class: "vidDuration" }).text(VideoManager.getDuration(video)))
 		)
 	).append($("<div>", { class: "vidText" })
 		.append($("<div>", { class: "vidTitle" })

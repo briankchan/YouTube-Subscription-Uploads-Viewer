@@ -140,9 +140,21 @@ ul {
 }
 
 .vidImg {
+	position: relative;
 	float: left;
 	width: 240px;
 	height: 135px;
+}
+.vidDuration {
+	position: absolute;
+	bottom: 2px;
+	right: 2px;
+	padding: 1px 4px;
+	color: #FFFFFF;
+	background: #000000;
+	opacity: 0.75;
+	font-weight: bold;
+	font-size: 12px;
 }
 
 .vidText {

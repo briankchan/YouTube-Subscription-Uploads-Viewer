@@ -188,7 +188,7 @@ exports.getVideoDetails = function(videoIds) {
 			VideoManager.setDescription(video, videoJSON.snippet.description);
 			VideoManager.setThumbnail(video, videoJSON.snippet.thumbnails.medium.url);
 			VideoManager.setUploadTime(video, videoJSON.snippet.publishedAt);
-			VideoManager.setDuration(video, videoJSON.contentDetails.duration);
+			VideoManager.setDuration(video, parseVideoDuration(videoJSON.contentDetails.duration));
 			VideoManager.setViewCount(video, parseInt(videoJSON.statistics.viewCount));
 			VideoManager.setLikesCount(video, parseInt(videoJSON.statistics.likeCount));
 			VideoManager.setDislikesCount(video, parseInt(videoJSON.statistics.dislikeCount));
@@ -202,3 +202,25 @@ exports.getVideoDetails = function(videoIds) {
 	
 	return deferred.promise();
 };
+
+function parseVideoDuration(duration) {
+	var h = /(\d+)(?:H)/g.exec(duration);
+	var m = /(\d+)(?:M)/g.exec(duration);
+	var s = /(\d+)(?:S)/g.exec(duration);
+	
+	var result = "";
+	
+	if(h) {
+		result += h[1] + ":";
+		result += (m ? padTime(m[1]) : "00") + ":";
+	} else {
+		result += (m ? m[1] : "0") + ":";
+	}
+	result += (s ? padTime(s[1]) : "00");
+	
+	return result;
+}
+
+function padTime(n) {
+	return "00".substring(0, 2 - n.length) + n;
+}
