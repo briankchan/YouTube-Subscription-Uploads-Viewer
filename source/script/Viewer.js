@@ -29,21 +29,23 @@ $(function() {
 	
 	backgroundPage.authorizePromise.done(hideLogin).fail(showLogin); //TODO use events
 	
-	$("#authorize-button").click(backgroundPage.authorize);
+	$("#authorizeButton").click(backgroundPage.authorize);
 	
-	$("#refresh-button").click(updateUploads);
+	$("#refreshButton").click(updateUploads);
+	
+	$("#channelControls").click(markAllWatched);
 	
 	$("#reload-extension-button").click(function() { chrome.runtime.reload() }); //debugging (reload ext. button)
 });
 
 function hideLogin() {
-	$("#authorize-button").hide();
-	$("#refresh-button").show();
+	$("#authorizeButton").hide();
+	$("#refreshButton").show();
 }
 
 function showLogin() {
-	$("#authorize-button").show();
-	$("#refresh-button").hide();
+	$("#authorizeButton").show();
+	$("#refreshButton").hide();
 }
 
 function displaySubscriptions() {
@@ -101,13 +103,13 @@ function updateUploads() {
 	console.log("loading videos"); //debugging
 	var start = new Date();
 	
-	$("#refresh-button").prop("disabled", true);
+	$("#refreshButton").prop("disabled", true);
 	
 	backgroundPage.updateUploads().done(function() {
 		var elapsed = new Date()-start;
 		console.log(elapsed + "ms");
 		
-		$("#refresh-button").prop("disabled", false);
+		$("#refreshButton").prop("disabled", false);
 		displayCurrentView();
 	});
 }
@@ -118,6 +120,8 @@ function displayUploads(id) {
 			var uploads = getChronologicalOrder(backgroundPage.getChannelUploads(id));
 			var thumb = backgroundPage.getChannelThumb(id);
 			var name = backgroundPage.getChannelName(id);
+			
+			$("#channelControls").show();
 			
 			clearVideosPanel();
 			$(window).scrollTop(0);
@@ -194,4 +198,12 @@ function getChronologicalOrder(videos) {
 	});
 	
 	return output;
+}
+
+function markAllWatched() {
+	$.each(backgroundPage.getChannelUploads(currentView), function(i, video) {
+		backgroundPage.setWatched(currentView, VideoManager.getId(video)); //TODO stop doing this individually
+	});
+	$(window).trigger("channelUpdate" + currentView);
+	$(".vid").addClass("watched");
 }

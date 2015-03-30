@@ -87,7 +87,12 @@ ul {
 	float: right;
 }
 
-#refresh-button {
+#channelControls {
+	float: right;
+	display: none;
+}
+
+#refreshButton {
 	display: none;
 }
 
