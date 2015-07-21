@@ -77,6 +77,7 @@ window.isChannelLoaded = function(channelId) { return Youtube.isChannelLoaded(ch
 window.getChannelName = function(channelId) { return Youtube.getChannelName(channelId) };
 window.getChannelThumb = function(channelId) { return Youtube.getChannelThumb(channelId) };
 window.getChannelUploads = function(channelId) { return Youtube.getChannelUploads(channelId) };
+window.getChannels = function() { return Youtube.getChannels(); };
 
 window.getSubscriptions = function() { return User.getSubscriptions() };
 window.setWatched = function(channelId, videoId) { User.setWatched(channelId, videoId) };

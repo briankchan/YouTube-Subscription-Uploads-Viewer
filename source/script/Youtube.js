@@ -151,3 +151,7 @@ exports.getChannelThumb = function(channelId) {
 exports.getChannelUploads = function(channelId) {
 	return $.merge([], channels[channelId].uploads);
 };
+
+exports.getChannels = function() {
+	return channels;
+}
