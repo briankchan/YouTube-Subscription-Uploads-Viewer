@@ -42,6 +42,16 @@ app.controller("channelsController", ['$scope', 'videosModel', function($scope, 
 app.controller("videosController", ["$scope", "$sce", "videosModel", function($scope, $sce, videosModel) {
 	$scope.videosModel = videosModel;
 	
+	$scope.getChannelId = function(video) {
+		return VideoManager.getUploader(video);
+	};
+	$scope.getChannelName = function(video) {
+		return backgroundPage.getChannelName($scope.getChannelId(video));
+	};
+	$scope.getChannelThumb = function(video) {
+		return backgroundPage.getChannelThumb($scope.getChannelId(video));
+	};
+	
 	$scope.getId = VideoManager.getId;
 	$scope.getThumbnail = function(video) {
 		return VideoManager.getThumbnail(video);

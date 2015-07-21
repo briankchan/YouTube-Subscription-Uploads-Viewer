@@ -176,7 +176,7 @@ exports.getVideoDetails = function(videoIds) {
 	videos.get({
 		id: videoIds,
 		part: "id,snippet,contentDetails,statistics",
-		fields: "items(id,snippet(publishedAt,title,description,thumbnails/medium/url),contentDetails/duration,statistics(viewCount,likeCount,dislikeCount,commentCount))",
+		fields: "items(id,snippet(publishedAt,channelId,title,description,thumbnails/medium/url),contentDetails/duration,statistics(viewCount,likeCount,dislikeCount,commentCount))",
 		maxResults: 50
 	}).done(function(response) {
 		var videos = [];
@@ -185,6 +185,7 @@ exports.getVideoDetails = function(videoIds) {
 			var video = VideoManager.createNewVideo();
 			VideoManager.setId(video, videoJSON.id);
 			VideoManager.setTitle(video, videoJSON.snippet.title);
+			VideoManager.setUploader(video, videoJSON.snippet.channelId);
 			VideoManager.setDescription(video, videoJSON.snippet.description);
 			VideoManager.setThumbnail(video, videoJSON.snippet.thumbnails.medium.url);
 			VideoManager.setUploadTime(video, videoJSON.snippet.publishedAt);

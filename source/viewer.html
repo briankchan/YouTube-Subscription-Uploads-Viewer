@@ -30,9 +30,10 @@
 			<li ng-repeat="video in videosModel.uploads | orderBy:getRawUploadTime:true"><div class="vid">
 				
 				<div class="vidUploader">
-					<!--.append(createChannelLink(channelId)-->
-					<img ng-src="{{}}" class=vidUploaderImg">
-					<span class="vidUploaderName">{{}}</span>
+					<a href="https://www.youtube.com/channel/{{getChannelId(video)}}" + target="_blank">
+						<img ng-src="{{getChannelThumb(video)}}" class="vidUploaderImg">
+						<span class="vidUploaderName">{{getChannelName(video)}}</span>
+					</a>
 				</div>
 				<div class="vidImg">
 					<a href="https://www.youtube.com/watch?v={{getId(video)}}" target="_blank">
