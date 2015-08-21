@@ -11,8 +11,8 @@ exports.setId = function(video, id) { video[0] = id; };
 exports.getTitle = function(video) { return video[1]; }; 
 exports.setTitle = function(video, title) { video[1] = title; };
 
-exports.getUploader = function(video) { return video[2]; };
-exports.setUploader = function(video, uploader) { video[2] = uploader };
+exports.getChannel = function(video) { return video[2]; };
+exports.setChannel = function(video, uploader) { video[2] = uploader };
 
 exports.getDescription = function(video) { return video[3]; };
 exports.setDescription = function(video, desc) { video[3] = desc; };

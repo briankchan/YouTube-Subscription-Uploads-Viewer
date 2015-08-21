@@ -154,4 +154,4 @@ exports.getChannelUploads = function(channelId) {
 
 exports.getChannels = function() {
 	return channels;
-}
+};

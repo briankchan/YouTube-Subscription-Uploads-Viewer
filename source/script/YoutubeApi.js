@@ -185,7 +185,7 @@ exports.getVideoDetails = function(videoIds) {
 			var video = VideoManager.createNewVideo();
 			VideoManager.setId(video, videoJSON.id);
 			VideoManager.setTitle(video, videoJSON.snippet.title);
-			VideoManager.setUploader(video, videoJSON.snippet.channelId);
+			VideoManager.setChannel(video, videoJSON.snippet.channelId);
 			VideoManager.setDescription(video, videoJSON.snippet.description);
 			VideoManager.setThumbnail(video, videoJSON.snippet.thumbnails.medium.url);
 			VideoManager.setUploadTime(video, videoJSON.snippet.publishedAt);
