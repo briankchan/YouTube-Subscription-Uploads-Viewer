@@ -29,11 +29,11 @@
 	
 	<div id="content" ng-controller="videosController">
 		<ul id="videos">
-			<li ng-repeat="video in videosModel.uploads | orderBy:getRawUploadTime:true track by video.id">
+			<li ng-repeat="video in videosModel.uploads | orderObjectBy:'upload':true track by video.id">
 				<div class="vid" ng-class="{watched: getWatched(video.channel,video.id)}">
 					
 					<div class="vidUploader">
-						<a href="https://www.youtube.com/channel/{{video.id}}" + target="_blank">
+						<a href="https://www.youtube.com/channel/{{video.channel}}" target="_blank">
 							<img ng-src="{{getChannelThumb(video)}}" class="vidUploaderImg">
 							<span class="vidUploaderName">{{getChannelName(video)}}</span>
 						</a>
@@ -48,7 +48,7 @@
 					
 					<div class="vidText">
 						<div class="vidTitle">
-							<a href="https://www.youtube.com/channel/{{video.channel}}" target="_blank">{{video.title}}</a>
+							<a href="https://www.youtube.com/watch?v={{video.id}}" target="_blank">{{video.title}}</a>
 						</div>
 						<div class="vidTime">{{getUploadTime(video)}}</div>
 						<div class="vidDesc" ng-bind-html="getDescription(video)"></div>
