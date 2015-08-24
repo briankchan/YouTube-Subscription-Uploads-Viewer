@@ -4,7 +4,6 @@
  */
 
 var YoutubeApi = require("./YoutubeApi.js");
-var VideoManager = require("./VideoObjectManager.js");
 var Storage = require("./Storage.js");
 
 var channels;
@@ -94,11 +93,11 @@ function updateChannelUploads(channelId) {
 	
 	YoutubeApi.getPlaylistItems(channel.uploadsPlaylist).done(function(videoIds) {
 		channel.uploads = $.grep(channel.uploads, function(video) { //remove deleted videos
-			return videoIds.indexOf(VideoManager.getId(video)) >= 0;
+			return videoIds.indexOf(video.id) >= 0;
 		});
 		
 		var currentVideoIds = $.map(channel.uploads, function(video) {
-			return VideoManager.getId(video);
+			return video.id;
 		});
 		var newVideoIds = $.grep(videoIds, function(videoId) { //only get new videos
 			return currentVideoIds.indexOf(videoId) < 0;

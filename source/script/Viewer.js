@@ -8,7 +8,6 @@ var $ = require("jquery");
 var backgroundPage = chrome.extension.getBackgroundPage();
 
 var HtmlLinkify = require("html-linkify");
-var VideoManager = require("./VideoObjectManager.js");
 
 var currentView = localStorage.currentView;
 
@@ -41,21 +40,11 @@ app.controller("channelsController", ['$scope', 'videosModel', function($scope, 
 app.controller("videosController", ["$scope", "$sce", "videosModel", function($scope, $sce, videosModel) {
 	$scope.videosModel = videosModel;
 	
-	$scope.getChannelId = VideoManager.getChannel;
-	$scope.getChannelName = function(video) { return backgroundPage.getChannelName($scope.getChannelId(video)); };
-	$scope.getChannelThumb = function(video) { return backgroundPage.getChannelThumb($scope.getChannelId(video)); };
+	$scope.getChannelName = function(video) { return backgroundPage.getChannelName(video.channel); };
+	$scope.getChannelThumb = function(video) { return backgroundPage.getChannelThumb(video.channel); };
 	
-	$scope.getId = VideoManager.getId;
-	$scope.getThumbnail = VideoManager.getThumbnail;
-	$scope.getDuration = VideoManager.getDuration;
-	$scope.getTitle = VideoManager.getTitle;
-	$scope.getRawUploadTime = VideoManager.getUploadTime;
-	$scope.getUploadTime = function(video) {
-		return new Date(VideoManager.getUploadTime(video)).toLocaleString();
-	};
-	$scope.getDescription = function(video) {
-		return $sce.trustAsHtml(parseDescription(VideoManager.getDescription(video)));
-	};
+	$scope.getUploadTime = function(video) { return new Date(video.upload).toLocaleString(); };
+	$scope.getDescription = function(video) { return $sce.trustAsHtml(parseDescription(video.desc)); };
 	function parseDescription(text) {
 		return HtmlLinkify(text.replace(/\n/g, "<br />"), { attributes: { target: "_blank" }, escape: false });
 	}
@@ -143,7 +132,7 @@ function updateUploads() {
 
 function markAllWatched() {
 	$.each(backgroundPage.getChannelUploads(currentView), function(i, video) {
-		backgroundPage.setWatched(currentView, VideoManager.getId(video)); //TODO stop doing this individually
+		backgroundPage.setWatched(currentView, video.id); //TODO stop doing this individually
 	});
 	$(window).trigger("channelUpdate" + currentView);
 	$(".vid").addClass("watched");

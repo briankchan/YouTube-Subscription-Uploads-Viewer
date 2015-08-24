@@ -29,34 +29,33 @@
 	
 	<div id="content" ng-controller="videosController">
 		<ul id="videos">
-			<li ng-repeat="video in videosModel.uploads | orderBy:getRawUploadTime:true track by getId(video)">
-				<div class="vid" ng-class="{watched: getWatched(getChannelId(video),getId(video))}">
+			<li ng-repeat="video in videosModel.uploads | orderBy:getRawUploadTime:true track by video.id">
+				<div class="vid" ng-class="{watched: getWatched(video.channel,video.id)}">
 					
 					<div class="vidUploader">
-						<a href="https://www.youtube.com/channel/{{getChannelId(video)}}" + target="_blank">
+						<a href="https://www.youtube.com/channel/{{video.id}}" + target="_blank">
 							<img ng-src="{{getChannelThumb(video)}}" class="vidUploaderImg">
 							<span class="vidUploaderName">{{getChannelName(video)}}</span>
 						</a>
 					</div>
 					
 					<div class="vidImg">
-						<a href="https://www.youtube.com/watch?v={{getId(video)}}" target="_blank">
-							<img ng-src="{{getThumbnail(video)}}" width="240">
+						<a href="https://www.youtube.com/watch?v={{video.id}}" target="_blank">
+							<img ng-src="{{video.thumb}}" width="240">
 						</a>
-						
-						<div class="vidDuration">{{getDuration(video)}}</div>
+						<div class="vidDuration">{{video.dur}}</div>
 					</div>
 					
 					<div class="vidText">
 						<div class="vidTitle">
-							<a href="https://www.youtube.com/channel/{{getId(video)}}" target="_blank">{{getTitle(video)}}</a>
+							<a href="https://www.youtube.com/channel/{{video.channel}}" target="_blank">{{video.title}}</a>
 						</div>
 						<div class="vidTime">{{getUploadTime(video)}}</div>
 						<div class="vidDesc" ng-bind-html="getDescription(video)"></div>
 					</div>
 					
-					<div class="vidMarkWatched" ng-click="markWatched(getChannelId(video),getId(video))">Mark watched</div>
-					<div class="vidMarkUnwatched" ng-click="markUnwatched(getChannelId(video),getId(video))">Mark unwatched</div>
+					<div class="vidMarkWatched" ng-click="markWatched(video.channel,video.id)">Mark watched</div>
+					<div class="vidMarkUnwatched" ng-click="markUnwatched(video.channel,video.id)">Mark unwatched</div>
 					
 				</div>
 			</li>

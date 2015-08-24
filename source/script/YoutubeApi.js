@@ -4,7 +4,6 @@
  */
 
 var YoutubeResource = require("./YoutubeResource.js");
-var VideoManager = require("./VideoObjectManager.js");
 
 var channels = new YoutubeResource("channels");
 var playlistItems = new YoutubeResource("playlistItems");
@@ -182,20 +181,19 @@ exports.getVideoDetails = function(videoIds) {
 		var videos = [];
 		
 		$.each(response.items, function(i, videoJSON) {
-			var video = VideoManager.createNewVideo();
-			VideoManager.setId(video, videoJSON.id);
-			VideoManager.setTitle(video, videoJSON.snippet.title);
-			VideoManager.setChannel(video, videoJSON.snippet.channelId);
-			VideoManager.setDescription(video, videoJSON.snippet.description);
-			VideoManager.setThumbnail(video, videoJSON.snippet.thumbnails.medium.url);
-			VideoManager.setUploadTime(video, videoJSON.snippet.publishedAt);
-			VideoManager.setDuration(video, parseVideoDuration(videoJSON.contentDetails.duration));
-			VideoManager.setViewCount(video, parseInt(videoJSON.statistics.viewCount));
-			VideoManager.setLikesCount(video, parseInt(videoJSON.statistics.likeCount));
-			VideoManager.setDislikesCount(video, parseInt(videoJSON.statistics.dislikeCount));
-			VideoManager.setCommentsCount(video, parseInt(videoJSON.statistics.commentCount));
-			
-			videos.push(video);
+			videos.push({
+				id: videoJSON.id,
+				title: videoJSON.snippet.title,
+				channel: videoJSON.snippet.channelId,
+				desc: videoJSON.snippet.description,
+				thumb: videoJSON.snippet.thumbnails.medium.url,
+				upload: videoJSON.snippet.publishedAt,
+				dur: parseVideoDuration(videoJSON.contentDetails.duration),
+				views: parseInt(videoJSON.statistics.viewCount),
+				likes: parseInt(videoJSON.statistics.likeCount),
+				dislikes: parseInt(videoJSON.statistics.dislikeCount),
+				comments: parseInt(videoJSON.statistics.commentCount)
+			});
 		});
 		
 		deferred.resolve(videos);

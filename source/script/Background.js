@@ -7,7 +7,6 @@ window.$ = window.jquery = require("jquery");
 
 var Youtube = window.Youtube = require("./Youtube.js"); //debugging
 var User = require("./User.js");
-var VideoManager = require("./VideoObjectManager.js");
 
 var authorizeDeferred = $.Deferred();
 var updateSubscriptionsDeferred = $.Deferred();
