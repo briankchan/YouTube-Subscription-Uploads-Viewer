@@ -18,40 +18,48 @@
 	
 	<div id="nav" ng-controller="channelsController">
 		<ul id="subscriptions">
-			<li class="channelLabel" ng-repeat="channel in channels | orderObjectBy:'name'" ng-click="select(channel)">
-				<img ng-src="{{channel.thumb}}" class="channelThumb">
-				<span class="channelName">{{channel.name}}</span>
+			<li class="channel" ng-repeat="(id, channel) in channels | orderObjectBy:'name' track by id" ng-click="select(channel)">
+				<div class="channelLabel">
+					<img ng-src="{{channel.thumb}}" class="channelThumb">
+					<span class="channelName">{{channel.name}}</span>
+				</div>
 			</li>
 		</ul>
 	</div>
 	
 	<div id="content" ng-controller="videosController">
 		<ul id="videos">
-			<li ng-repeat="video in videosModel.uploads | orderBy:getRawUploadTime:true"><div class="vid">
-				
-				<div class="vidUploader">
-					<a href="https://www.youtube.com/channel/{{getChannelId(video)}}" + target="_blank">
-						<img ng-src="{{getChannelThumb(video)}}" class="vidUploaderImg">
-						<span class="vidUploaderName">{{getChannelName(video)}}</span>
-					</a>
-				</div>
-				<div class="vidImg">
-					<a href="https://www.youtube.com/watch?v={{getId(video)}}" target="_blank">
-						<img ng-src="{{getThumbnail(video)}}" width="240">
-					</a>
-					<div class="vidDuration">{{getDuration(video)}}</div>
-				</div>
-				
-				<div class="vidText">
-					<div class="vidTitle">
-						<a href="https://www.youtube.com/channel/{{getId(video)}}" target="_blank">{{getTitle(video)}}</a>
+			<li ng-repeat="video in videosModel.uploads | orderBy:getRawUploadTime:true track by getId(video)">
+				<div class="vid" ng-class="{watched: getWatched(getChannelId(video),getId(video))}">
+					
+					<div class="vidUploader">
+						<a href="https://www.youtube.com/channel/{{getChannelId(video)}}" + target="_blank">
+							<img ng-src="{{getChannelThumb(video)}}" class="vidUploaderImg">
+							<span class="vidUploaderName">{{getChannelName(video)}}</span>
+						</a>
 					</div>
-					<div class="vidTime">{{getUploadTime(video)}}</div>
-					<div class="vidDesc" ng-bind-html="getDescription(video)"></div>
+					
+					<div class="vidImg">
+						<a href="https://www.youtube.com/watch?v={{getId(video)}}" target="_blank">
+							<img ng-src="{{getThumbnail(video)}}" width="240">
+						</a>
+						
+						<div class="vidDuration">{{getDuration(video)}}</div>
+					</div>
+					
+					<div class="vidText">
+						<div class="vidTitle">
+							<a href="https://www.youtube.com/channel/{{getId(video)}}" target="_blank">{{getTitle(video)}}</a>
+						</div>
+						<div class="vidTime">{{getUploadTime(video)}}</div>
+						<div class="vidDesc" ng-bind-html="getDescription(video)"></div>
+					</div>
+					
+					<div class="vidMarkWatched" ng-click="markWatched(getChannelId(video),getId(video))">Mark watched</div>
+					<div class="vidMarkUnwatched" ng-click="markUnwatched(getChannelId(video),getId(video))">Mark unwatched</div>
+					
 				</div>
-				<div class="vidMarkWatched">Mark watched</div>
-				<div class="vidMarkUnwatched">Mark unwatched</div>
-				</div></li>
+			</li>
 		</ul>
 	</div>
 </body>

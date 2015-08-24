@@ -59,6 +59,10 @@ app.controller("videosController", ["$scope", "$sce", "videosModel", function($s
 	function parseDescription(text) {
 		return HtmlLinkify(text.replace(/\n/g, "<br />"), { attributes: { target: "_blank" }, escape: false });
 	}
+	
+	$scope.markWatched = backgroundPage.setWatched;
+	$scope.markUnwatched = backgroundPage.setUnwatched;
+	$scope.getWatched = backgroundPage.getWatched;
 }]);
 app.filter('orderObjectBy', function() {
 	return function(items, field, reverse) {
