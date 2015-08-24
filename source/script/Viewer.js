@@ -27,7 +27,6 @@ var app = angular.module('ytUploadsViewer', []);
 //		});
 
 app.controller("channelsController", ['$scope', 'videosModel', function($scope, videosModel) {
-	
 	$scope.channels = videosModel.channels;
 	
 	$scope.select = function(channel) {
@@ -42,27 +41,15 @@ app.controller("channelsController", ['$scope', 'videosModel', function($scope, 
 app.controller("videosController", ["$scope", "$sce", "videosModel", function($scope, $sce, videosModel) {
 	$scope.videosModel = videosModel;
 	
-	$scope.getChannelId = function(video) {
-		return VideoManager.getChannel(video);
-	};
-	$scope.getChannelName = function(video) {
-		return backgroundPage.getChannelName($scope.getChannelId(video));
-	};
-	$scope.getChannelThumb = function(video) {
-		return backgroundPage.getChannelThumb($scope.getChannelId(video));
-	};
+	$scope.getChannelId = VideoManager.getChannel;
+	$scope.getChannelName = function(video) { return backgroundPage.getChannelName($scope.getChannelId(video)); };
+	$scope.getChannelThumb = function(video) { return backgroundPage.getChannelThumb($scope.getChannelId(video)); };
 	
 	$scope.getId = VideoManager.getId;
-	$scope.getThumbnail = function(video) {
-		return VideoManager.getThumbnail(video);
-	};
-	$scope.getDuration = function(video) {
-		return VideoManager.getDuration(video);
-	};
+	$scope.getThumbnail = VideoManager.getThumbnail;
+	$scope.getDuration = VideoManager.getDuration;
 	$scope.getTitle = VideoManager.getTitle;
-	$scope.getRawUploadTime = function(video) {
-		return VideoManager.getUploadTime(video);
-	};
+	$scope.getRawUploadTime = VideoManager.getUploadTime;
 	$scope.getUploadTime = function(video) {
 		return new Date(VideoManager.getUploadTime(video)).toLocaleString();
 	};
@@ -109,10 +96,10 @@ $(function() {
 		}
 	});
 	
-	backgroundPage.updateSubscriptionsPromise.done(function() {
+	//backgroundPage.updateSubscriptionsPromise.done(function() {
 			//displaySubscriptions();
-			backgroundPage.updateUploadsPromise.done(displayCurrentView);
-	});
+			//backgroundPage.updateUploadsPromise.done(displayCurrentView);
+	//});
 	
 	backgroundPage.authorizePromise.done(hideLogin).fail(showLogin); //TODO use events
 	
@@ -123,9 +110,6 @@ $(function() {
 	$("#channelControls").click(markAllWatched);
 	
 	$("#reload-extension-button").click(function() { chrome.runtime.reload() }); //debugging (reload ext. button)
-	
-	
-	
 });
 
 function hideLogin() {
@@ -136,57 +120,6 @@ function hideLogin() {
 function showLogin() {
 	$("#authorizeButton").show();
 	$("#refreshButton").hide();
-}
-
-function displaySubscriptions() {
-	console.log("drawing subs"); //debugging
-	
-	backgroundPage.updateSubscriptionsPromise.done(function() {
-		$.each(backgroundPage.getSubscriptions(), function(i, id) {
-			
-			var label = $("<div>", { class: "channelLabel" })
-					.append($("<img>", { src: backgroundPage.getChannelThumb(id), class: "channelThumb" }))
-					.append($("<span>", { class: "channelName"}).text(backgroundPage.getChannelName(id)));
-			var counter = $("<div>", { class: "channelUnwatched" });
-			
-			var updateCounter = function(event, amount) {
-				if(amount) {
-					var text = counter.text();
-					if(text == "") {
-						counter.text(amount);
-					} else {
-						counter.text(parseInt(counter.text(), 10) + amount);
-					}
-				} else {
-					var watched = backgroundPage.getWatchedVideos(id);
-					
-					counter.text($.grep(backgroundPage.getChannelUploads(id), function(vid, i) {
-						return watched.indexOf(VideoManager.getId(vid)) < 0;
-					}).length);
-				}
-			};
-			
-			$(window).on("channelUpdate" + id, updateCounter);
-			$(backgroundPage).on("channelUpdate" + id, updateCounter);
-			
-			if(backgroundPage.isLoggedIn()) updateCounter(); //TODO check if subscriptions loaded instead?
-			
-			$("#subscriptions").append($("<li>")
-					.append($("<div>", { class: "channel" })
-							.append(counter) //order flipped for css reasons
-							.append(label)
-							.click(function() {
-								displayUploads(id);
-							})
-					)
-			);
-		});
-	});
-}
-
-function displayCurrentView() {
-	if (currentView)
-		displayUploads(currentView);
 }
 
 function updateUploads() {
@@ -200,95 +133,8 @@ function updateUploads() {
 		console.log(elapsed + "ms");
 		
 		$("#refreshButton").prop("disabled", false);
-		displayCurrentView();
+		//displayCurrentView();
 	});
-}
-
-function displayUploads(id) {
-	return; //debugging
-	backgroundPage.updateSubscriptionsPromise.done(function(loaded) {
-		if (backgroundPage.isChannelLoaded(id)) {
-			var uploads = getChronologicalOrder(backgroundPage.getChannelUploads(id));
-			var thumb = backgroundPage.getChannelThumb(id);
-			var name = backgroundPage.getChannelName(id);
-			
-			$("#channelControls").show();
-			
-			clearVideosPanel();
-			$(window).scrollTop(0);
-			$.each(uploads, function(i, video) {
-				$("#videos").append($("<li>").append(createVideoElement(video, name, thumb, id)));
-			});
-			localStorage.currentView = currentView = id;
-		} else console.error(id + " is not a valid loaded channel ID.");
-	});
-}
-
-function clearVideosPanel() {
-	$("#videos").empty();
-}
-
-function createVideoElement(video, channelName, channelThumb, channelId) {//TODO: move to new file
-	var id = VideoManager.getId(video);
-	
-	var videoElement = $("<div>", { class: "vid" });
-	var markWatched = function() {
-		$(window).trigger("channelUpdate" + channelId, -1);
-		
-		videoElement.addClass("watched");
-		backgroundPage.setWatched(channelId, id);
-	};
-	var markUnwatched = function() {
-		$(window).trigger("channelUpdate" + channelId, 1); //TODO move to background page for other viewers
-		
-		videoElement.removeClass("watched");
-		backgroundPage.setUnwatched(channelId, id);
-	};
-	
-	if (backgroundPage.getWatched(channelId, id))
-		videoElement.addClass("watched");
-	
-	videoElement.append($("<div>", { class: "vidUploader" })
-		.append(createChannelLink(channelId)
-			.append($("<img>", { src: channelThumb, class: "vidUploaderImg" }))
-			.append($("<span>", { class: "vidUploaderName"}).text(channelName))
-		)
-	).append($("<div>", { class: "vidImg" })
-		.append(createVideoLink(id).click(markWatched)
-			.append($("<img>", { src: VideoManager.getThumbnail(video), width: "240" }))
-			.append($("<div>", { class: "vidDuration" }).text(VideoManager.getDuration(video)))
-		)
-	).append($("<div>", { class: "vidText" })
-		.append($("<div>", { class: "vidTitle" })
-			.append(createVideoLink(id).click(markWatched).text(VideoManager.getTitle(video)))
-		).append($("<div>", { class: "vidTime" }).text(new Date(VideoManager.getUploadTime(video)).toLocaleString()))
-		.append($("<div>", { class: "vidDesc" }).html(parseDescription(VideoManager.getDescription(video))))
-	).append($("<div>", { class: "vidMarkWatched" }).text("Mark watched").click(markWatched))
-	.append($("<div>", { class: "vidMarkUnwatched" }).text("Mark unwatched").click(markUnwatched));
-	return videoElement;
-}
-
-function parseDescription(text) {
-	return HtmlLinkify(text.replace(/\n/g, "<br />"), { attributes: { target: "_blank" }, escape: false });
-}
-
-function createVideoLink(videoId) {
-	return $("<a>", { href: "https://www.youtube.com/watch?v="+videoId, target: "_blank" });
-}
-
-function createChannelLink(channelId) {
-	return $("<a>", { href: "https://www.youtube.com/channel/"+channelId, target: "_blank" });
-}
-
-function getChronologicalOrder(videos) {
-	var output = $.extend([], videos);
-	
-	output.sort(function(a, b) {
-		//newest videos first
-		return new Date(VideoManager.getUploadTime(b)) - new Date(VideoManager.getUploadTime(a)); 
-	});
-	
-	return output;
 }
 
 function markAllWatched() {
