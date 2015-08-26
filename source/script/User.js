@@ -14,53 +14,76 @@ exports.loadUsers = function() {
 exports.setUser = function(id) {
 	if(!users[id]) {
 		users[id] = {
-			watched: {}
+			subscriptions: {}
 		};
 	}
 	user = users[id];
 };
 
 exports.setSubscriptions = function(subs) {
-	user.subscriptions = subs; //TODO filter + handle deleted subs
+	//TODO filter + handle deleted subs
+	
+	$.each(subs, function(i, id) {
+		if(!$.isPlainObject(user.subscriptions[id])) {
+			user.subscriptions[id] = {
+				watched: [],
+				unwatchedCount: 0
+			}
+		}
+	});
 	
 	Storage.set("users", users);
 };
 
-exports.getSubscriptions = function() {
-	return user.subscriptions;
+exports.getSubscriptionIds = function() {
+	return Object.keys(user.subscriptions);
 };
 
 exports.setWatched = function(channelId, videoId) {
-	if(!getWatched(channelId, videoId)) {
-		if (!user.watched[channelId]) {
-			user.watched[channelId] = [];
-		}
-		var videos = user.watched[channelId];
-		videos.push(videoId);
-		if (videos.length > 100)
-			videos.shift();
+	if(!exports.isWatched(channelId, videoId)) {
+		var channel = user.subscriptions[channelId];
+		var watched = channel.watched;
+		watched.push(videoId);
+		if (watched.length > 100)
+			watched.shift();
+		
+		channel.unwatchedCount--;
 		
 		Storage.set("users", users);
 	}
 };
 
 exports.setUnwatched = function(channelId, videoId) {
-	var videos = user.watched[channelId];
-	if(videos) {
-		var i = videos.indexOf(videoId);
-		if(i >= 0) {
-			videos.splice(i, 1);
-			Storage.set("users", users);
-		}
+	var channel = user.subscriptions[channelId];
+	var watched = channel.watched;
+	var i = watched.indexOf(videoId);
+	if(i >= 0) {
+		watched.splice(i, 1);
+		channel.unwatchedCount++;
+		Storage.set("users", users);
 	}
 };
 
-exports.getWatched = function(channelId, videoId) {
-	var videos = user.watched[channelId];
-	return videos && videos.indexOf(videoId) >= 0;
+exports.isWatched = function(channelId, videoId) {
+	var watched = user.subscriptions[channelId].watched;
+	return watched.indexOf(videoId) >= 0;
 };
 
 exports.getWatchedVideos = function(channelId) {
-	var videos = user.watched[channelId];
-	return (videos) ? $.merge([], videos) : [];
+	var watched = user.subscriptions[channelId].watched;
+	return $.merge([], watched);
+};
+
+exports.updateWatchedCount = function(channelId, uploads) {
+	var watched = exports.getWatchedVideos(channelId);
+	var unwatched = $.grep(uploads, function(video, i) {
+		return watched.indexOf(video.id) < 0;
+	});
+	user.subscriptions[channelId].unwatchedCount = unwatched.length;
+	
+	Storage.set("users", users);
+};
+
+exports.getUnwatchedCount = function(channelId) {
+	return user.subscriptions[channelId].unwatchedCount;
 };

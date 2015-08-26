@@ -73,8 +73,8 @@ exports.updateChannelsUploads = function(channelIds) {
 	var deferred = $.Deferred();
 	
 	var promises = $.map(channelIds, function(id, i) {
-		return updateChannelUploads(id).done(function() {
-			deferred.notify(id);
+		return updateChannelUploads(id).done(function(uploads) {//TODO: include whether there are new videos?
+			deferred.notify(id, uploads);
 		});
 	});
 	
@@ -105,9 +105,9 @@ function updateChannelUploads(channelId) {
 		
 		getVideosData(newVideoIds).done(function(videos) {
 			if(videos)
-				channel.uploads = $.merge(videos, channel.uploads);
+				channel.uploads = $.merge(videos, channel.uploads);//TODO: limit 50 videos saved?
 			
-			deferred.resolve();
+			deferred.resolve(channel.uploads);
 		});
 	});
 	

@@ -19,6 +19,7 @@
 	<div id="nav" ng-controller="channelsController">
 		<ul id="subscriptions">
 			<li class="channel" ng-repeat="(id, channel) in channels | orderObjectBy:'name' track by id" ng-click="select(channel)">
+				<div class="channelUnwatched">{{getUnwatchedCount(channel.key)}}</div>
 				<div class="channelLabel">
 					<img ng-src="{{channel.thumb}}" class="channelThumb">
 					<span class="channelName">{{channel.name}}</span>
@@ -30,7 +31,7 @@
 	<div id="content" ng-controller="videosController">
 		<ul id="videos">
 			<li ng-repeat="video in videosModel.uploads | orderObjectBy:'upload':true track by video.id">
-				<div class="vid" ng-class="{watched: getWatched(video.channel,video.id)}">
+				<div class="vid" ng-class="{watched: isWatched(video.channel,video.id)}">
 					
 					<div class="vidUploader">
 						<a href="https://www.youtube.com/channel/{{video.channel}}" target="_blank">

@@ -35,6 +35,8 @@ app.controller("channelsController", ['$scope', 'videosModel', function($scope, 
 	$scope.isSelected = function(channel) {
 		return channel === videosModel.selected;
 	};
+	
+	$scope.getUnwatchedCount = backgroundPage.getUnwatchedCount;
 }]);
 
 app.controller("videosController", ["$scope", "$sce", "videosModel", function($scope, $sce, videosModel) {
@@ -51,12 +53,13 @@ app.controller("videosController", ["$scope", "$sce", "videosModel", function($s
 	
 	$scope.markWatched = backgroundPage.setWatched;
 	$scope.markUnwatched = backgroundPage.setUnwatched;
-	$scope.getWatched = backgroundPage.getWatched;
+	$scope.isWatched = backgroundPage.isWatched;
 }]);
 app.filter('orderObjectBy', function() {
 	return function(items, field, reverse) {
 		var filtered = [];
-		angular.forEach(items, function(item) {
+		angular.forEach(items, function(item, key) {
+			item.key = key;
 			filtered.push(item);
 		});
 		filtered.sort(function (a, b) {
