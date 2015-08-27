@@ -18,11 +18,11 @@
 	
 	<div id="nav" ng-controller="channelsController">
 		<ul id="subscriptions">
-			<li class="channel" ng-repeat="(id, channel) in channels | orderObjectBy:'name' track by id" ng-click="select(channel)">
-				<div class="channelUnwatched">{{getUnwatchedCount(channel.key)}}</div>
+			<li class="channel" ng-repeat="channel in subscriptions | orderBy:getChannelName" ng-click="select(channel)">
+				<div class="channelUnwatched">{{getUnwatchedCount(channel)}}</div>
 				<div class="channelLabel">
-					<img ng-src="{{channel.thumb}}" class="channelThumb">
-					<span class="channelName">{{channel.name}}</span>
+					<img ng-src="{{getChannelThumb(channel)}}" class="channelThumb">
+					<span class="channelName">{{getChannelName(channel)}}</span>
 				</div>
 			</li>
 		</ul>
@@ -30,7 +30,7 @@
 	
 	<div id="content" ng-controller="videosController">
 		<ul id="videos">
-			<li ng-repeat="video in videosModel.uploads | orderObjectBy:'upload':true track by video.id">
+			<li ng-repeat="video in getVideos() | orderObjectBy:'upload':true track by video.id">
 				<div class="vid" ng-class="{watched: isWatched(video.channel,video.id)}">
 					
 					<div class="vidUploader">
@@ -51,8 +51,8 @@
 						<div class="vidTitle">
 							<a href="https://www.youtube.com/watch?v={{video.id}}" target="_blank">{{video.title}}</a>
 						</div>
-						<div class="vidTime">{{getUploadTime(video)}}</div>
-						<div class="vidDesc" ng-bind-html="getDescription(video)"></div>
+						<div class="vidTime">{{formatUploadTime(video.upload)}}</div>
+						<div class="vidDesc" ng-bind-html="formatDescription(video.desc)"></div>
 					</div>
 					
 					<div class="vidMarkWatched" ng-click="markWatched(video.channel,video.id)">Mark watched</div>

@@ -13,8 +13,7 @@ var currentView = localStorage.currentView;
 
 var app = angular.module('ytUploadsViewer', []);
 
-//angular.module('modelDemo', []).
-//		config(function ($routeProvider) {
+//app.config(function ($routeProvider) {
 //			$routeProvider.
 //					when('/', {
 //						controller: 'AuthorListCtrl',
@@ -25,36 +24,48 @@ var app = angular.module('ytUploadsViewer', []);
 //					});
 //		});
 
-app.controller("channelsController", ['$scope', 'videosModel', function($scope, videosModel) {
-	$scope.channels = videosModel.channels;
+app.controller("channelsController", ["$scope", "currentView", "background", function($scope, currentView, background) {
+	$scope.subscriptions = background.getSubscriptionIds();
 	
-	$scope.select = function(channel) {
-		videosModel.setSelected(channel);
-	};
+	$scope.getChannelName = background.getChannelName;
+	$scope.getChannelThumb = background.getChannelThumb;
+	$scope.getUnwatchedCount = background.getUnwatchedCount;
 	
-	$scope.isSelected = function(channel) {
-		return channel === videosModel.selected;
-	};
-	
-	$scope.getUnwatchedCount = backgroundPage.getUnwatchedCount;
+	$scope.select = currentView.setSelected;
+	$scope.isSelected = currentView.isSelected;
 }]);
-
-app.controller("videosController", ["$scope", "$sce", "videosModel", function($scope, $sce, videosModel) {
-	$scope.videosModel = videosModel;
+app.controller("videosController", ["$scope", "$sce", "currentView", "background", function($scope, $sce, currentView, background) {
+	$scope.getVideos = function() { return currentView.videos; };
 	
-	$scope.getChannelName = function(video) { return backgroundPage.getChannelName(video.channel); };
-	$scope.getChannelThumb = function(video) { return backgroundPage.getChannelThumb(video.channel); };
+	$scope.getChannelName = function(video) { return background.getChannelName(video.channel); };
+	$scope.getChannelThumb = function(video) { return background.getChannelThumb(video.channel); };
 	
-	$scope.getUploadTime = function(video) { return new Date(video.upload).toLocaleString(); };
-	$scope.getDescription = function(video) { return $sce.trustAsHtml(parseDescription(video.desc)); };
-	function parseDescription(text) {
-		return HtmlLinkify(text.replace(/\n/g, "<br />"), { attributes: { target: "_blank" }, escape: false });
+	$scope.formatUploadTime = function(time) { return new Date(time).toLocaleString(); };//TODO: move to directives
+	$scope.formatDescription = function(desc) { 
+		return $sce.trustAsHtml(HtmlLinkify(desc.replace(/\n/g, "<br />"), {attributes:{target:"_blank"}, escape:false}));
+	};
+	
+	$scope.markWatched = background.setWatched;
+	$scope.markUnwatched = background.setUnwatched;
+	$scope.isWatched = background.isWatched;
+}]);
+app.service("currentView", function() {
+	var that = this;
+	this.selected = null;
+	this.videos = null;
+	this.setSelected = function(channel) {
+		if(channel) {
+			that.selected = channel;
+			that.videos = backgroundPage.getChannelUploads(channel);
+		}
+	};
+	this.isSelected = function(channel) {
+		return that.selected == channel;
 	}
-	
-	$scope.markWatched = backgroundPage.setWatched;
-	$scope.markUnwatched = backgroundPage.setUnwatched;
-	$scope.isWatched = backgroundPage.isWatched;
-}]);
+});
+app.factory("background", function() {
+	return backgroundPage;
+});
 app.filter('orderObjectBy', function() {
 	return function(items, field, reverse) {
 		var filtered = [];
@@ -69,17 +80,6 @@ app.filter('orderObjectBy', function() {
 		return filtered;
 	};
 });
-app.service("videosModel", [function() {
-	this.channels = backgroundPage.getChannels();
-	
-	this.selected = null;
-	this.uploads = null;
-	this.setSelected = function(channel) {
-		this.selected = channel;
-		this.uploads = channel.uploads;
-	};
-	
-}]);
 
 $(function() {
 	//keep scrolling in nav pane from bubbling to outer window
