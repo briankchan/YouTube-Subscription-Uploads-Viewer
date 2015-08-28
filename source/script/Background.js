@@ -72,11 +72,9 @@ window.updateUploads = function() {
 		User.updateWatchedCount(channelId, uploads);
 	});
 };
-window.isChannelLoaded = function(channelId) { return Youtube.isChannelLoaded(channelId) };
 window.getChannelName = function(channelId) { return Youtube.getChannelName(channelId) };
 window.getChannelThumb = function(channelId) { return Youtube.getChannelThumb(channelId) };
 window.getChannelUploads = function(channelId) { return Youtube.getChannelUploads(channelId) };
-window.getChannels = function() { return Youtube.getChannels(); };
 
 window.getSubscriptionIds = function() { return User.getSubscriptionIds() };
 window.setWatched = function(channelId, videoId) { User.setWatched(channelId, videoId) };
@@ -84,3 +82,11 @@ window.setUnwatched = function(channelId, videoId) { User.setUnwatched(channelId
 window.isWatched = function(channelId, videoId) { return User.isWatched(channelId, videoId) };
 window.getWatchedVideos = function(channelId) { return User.getWatchedVideos(channelId) };
 window.getUnwatchedCount = User.getUnwatchedCount;
+
+function IllegalArgumentError(message) {
+	Error.captureStackTrace(this);
+	this.message = message;
+}
+IllegalArgumentError.prototype = Object.create(Error.prototype);
+IllegalArgumentError.prototype.name = "IllegalArgumentError";
+window.IllegalArgumentError = IllegalArgumentError;

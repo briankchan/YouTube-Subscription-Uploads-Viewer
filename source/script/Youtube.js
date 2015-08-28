@@ -6,6 +6,8 @@
 var YoutubeApi = require("./YoutubeApi.js");
 var Storage = require("./Storage.js");
 
+var MAX_VIDEOS_PER_CHANNEL = 50;
+
 var channels;
 
 exports.authorize = function() {
@@ -104,14 +106,19 @@ function updateChannelUploads(channelId) {
 		});
 		
 		getVideosData(newVideoIds).done(function(videos) {
-			if(videos)
-				channel.uploads = $.merge(videos, channel.uploads);//TODO: limit 50 videos saved?
-			
+			if(videos){
+				$.merge(channel.uploads, videos).sort(sortVideosByUploadTime);//TODO: limit 50 videos saved?
+				channel.uploads.length = MAX_VIDEOS_PER_CHANNEL;
+			}
 			deferred.resolve(channel.uploads);
 		});
 	});
 	
 	return deferred.promise();
+}
+
+function sortVideosByUploadTime(a, b) {
+	return Date.parse(a.upload) - Date.parse(b.upload);
 }
 
 function getVideosData(videoIds) {
@@ -135,22 +142,22 @@ function getVideosData(videoIds) {
 	return deferred.promise();
 }
 
-exports.isChannelLoaded = function(channelId) {
-	return channels[channelId] != undefined
-};
-
 exports.getChannelName = function(channelId) {
+	checkChannelLoaded(channelId);
 	return channels[channelId].name;
 };
 
 exports.getChannelThumb = function(channelId) {
+	checkChannelLoaded(channelId);
 	return channels[channelId].thumb;
 };
 
 exports.getChannelUploads = function(channelId) {
+	checkChannelLoaded(channelId);
 	return $.merge([], channels[channelId].uploads);
 };
 
-exports.getChannels = function() {
-	return channels;
-};
+function checkChannelLoaded(channelId) {
+	if (channels[channelId] == undefined)
+		throw new IllegalArgumentError(channelId + " is not a loaded channel");
+}
