@@ -29,7 +29,17 @@ app.controller("channelsController", ["$scope", "currentView", "background", fun
 	
 	$scope.getChannelName = background.getChannelName;
 	$scope.getChannelThumb = background.getChannelThumb;
-	$scope.getUnwatchedCount = background.getUnwatchedCount;
+	$scope.getUnwatchedCount = function(channelId) {
+		if(channelId)
+			return background.getUnwatchedCount(channelId);
+		else {
+			var count = 0;
+			$.each($scope.subscriptions, function(i, channelId) {
+				count += background.getUnwatchedCount(channelId);
+			});
+			return count;
+		}
+	};
 	
 	$scope.select = currentView.setSelected;
 	$scope.isSelected = currentView.isSelected;
@@ -57,6 +67,12 @@ app.service("currentView", function() {
 		if(channel) {
 			that.selected = channel;
 			that.videos = backgroundPage.getChannelUploads(channel);
+		} else {
+			that.selected = null;
+			that.videos = [];
+			$.each(backgroundPage.getSubscriptionIds(), function(i, channelId) {
+				$.merge(that.videos, backgroundPage.getChannelUploads(channelId));
+			});
 		}
 	};
 	this.isSelected = function(channel) {
