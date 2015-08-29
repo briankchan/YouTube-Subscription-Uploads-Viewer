@@ -2,12 +2,15 @@
 var Storage = require("./Storage.js");
 
 var users;
-
 var user;
 
-exports.loadUsers = function() {
+exports.init = function() {
 	return Storage.get("users").done(function(value) {
-		users = (typeof value === "object") ? value : {};
+		if(value === undefined) {
+			users = {};
+		} else if (typeof value === "object") {
+			users = value;
+		} else throw new StorageError("users is the wrong type: " + typeof value + ": " + value);
 	})
 };
 
@@ -20,10 +23,10 @@ exports.setUser = function(id) {
 	user = users[id];
 };
 
-exports.setSubscriptions = function(subs) {
+exports.setSubscriptions = function(channelIds) {
 	//TODO filter + handle deleted subs
 	
-	$.each(subs, function(i, id) {
+	$.each(channelIds, function(i, id) {
 		if(!$.isPlainObject(user.subscriptions[id])) {
 			user.subscriptions[id] = {
 				watched: [],

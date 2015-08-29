@@ -13,7 +13,7 @@ var updateSubscriptionsDeferred = $.Deferred();
 var updateUploadsDeferred = $.Deferred();
 
 var loadVideosPromise = Youtube.loadUploads(); //TODO do these actually need to be exposed
-var loadUsersPromise = User.loadUsers();
+var userInitPromise = User.init();
 
 window.authorizePromise = authorizeDeferred.promise();
 window.updateSubscriptionsPromise = updateSubscriptionsDeferred.promise();
@@ -25,7 +25,7 @@ if(Youtube.isLoggedIn()) {
 } else console.log("not logged in");
 
 authorizeDeferred.done(function() {
-	loadUsersPromise.done(function() {
+	userInitPromise.done(function() {
 		Youtube.getUserId().done(function(userId) {
 			User.setUser(userId);
 		});
@@ -90,3 +90,11 @@ function IllegalArgumentError(message) {
 IllegalArgumentError.prototype = Object.create(Error.prototype);
 IllegalArgumentError.prototype.name = "IllegalArgumentError";
 window.IllegalArgumentError = IllegalArgumentError;
+
+function StorageError(message) {
+	Error.captureStackTrace(this);
+	this.message = message;
+}
+StorageError.prototype = Object.create(Error.prototype);
+StorageError.prototype.name = "StorageError";
+window.StorageError = StorageError;
