@@ -1,23 +1,67 @@
 {
-  "name": "youtube-subscription-uploads-viewer-chrome-extension",
-  "version": "v0.0.0",
+  "name": "youtube-subscriptions-viewer-chrome-extension",
+  "description": "",
+  "version": "0.0.0",
   "repository": {
     "type": "git",
     "url": "https://github.com/iluvredwall/YouTube-Subscription-Uploads-Viewer.git"
   },
-  "scripts": {},
-  "devDependencies": {
-    "grunt": "^0.4.5",
-    "grunt-browserify": "^3.8.0",
-    "grunt-contrib-watch": "^0.6.1",
-    "minifyify": "^7.0.3"
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "browserify": "browserify",
+    "browserifybuild": "browserify typescript/background/index.tsx -o extension/background.js -d -p [ tsify ]",
+    "browserifybuild-main": "browserify typescript/main/index.tsx -o extension/main.js -d -p [ tsify ] -p [ css-modulesify -o extension/main.css ]",
+    "watchify": "watchify typescript/background/index.tsx -o extension/background.js -d -p [ tsify ] -v",
+    "rollup": "rollup",
+    "build-back": "rollup -i typescript/background/index.tsx -o extension/background.js -c",
+    "build-main": "rollup -i typescript/main/index.tsx -o extension/main.js -c",
+    "build": "run-p build-back build-main -cs",
+    "watch-back": "rollup -i typescript/background/index.tsx -o extension/background.js -c -w",
+    "watch-main": "rollup -i typescript/main/index.tsx -o extension/main.js -c -w",
+    "watch": "run-p watch-back watch-main -cs"
   },
   "author": "iluvredwall <bobomb.asplode@gmail.com>",
-  "license": "GPL3",
-  "readmeFilename": "README.md",
+  "license": "ISC",
   "dependencies": {
-    "angular": "^1.4.3",
-    "html-linkify": "^1.2.1",
-    "jquery": "^2.1.4"
+    "immutable": "^3.8.1",
+    "material-ui": "^0.15.4",
+    "normalize.css": "^4.2.0",
+    "react": "^15.3.1",
+    "react-css-modules": "^3.7.10",
+    "react-dom": "^15.3.1",
+    "react-redux": "^4.4.5",
+    "react-router": "^2.8.0",
+    "redux": "^3.5.2",
+    "redux-actions": "^0.12.0"
+  },
+  "devDependencies": {
+    "@types/chrome": "0.0.32",
+    "@types/material-ui": "^0.15.34",
+    "@types/react": "^0.14.33",
+    "@types/react-css-modules": "^3.7.2",
+    "@types/react-dom": "^0.14.16",
+    "@types/react-redux": "^4.4.31",
+    "@types/react-router": "^2.0.33",
+    "@types/redux-actions": "^0.8.30",
+    "@types/webrtc": "0.0.17",
+    "@types/whatwg-fetch": "0.0.30",
+    "babel-plugin-transform-es2015-modules-commonjs": "^6.11.5",
+    "babelify": "^7.3.0",
+    "browserify": "^13.1.0",
+    "css-modulesify": "^0.25.1",
+    "rollup": "^0.34.10",
+    "rollup-plugin-commonjs": "^3.3.1",
+    "rollup-plugin-node-builtins": "^1.0.7",
+    "rollup-plugin-node-globals": "^1.0.6",
+    "rollup-plugin-node-resolve": "^2.0.0",
+    "rollup-plugin-typescript": "^0.8.1",
+    "rollup-watch": "^2.5.0",
+    "rollupify": "^0.3.4",
+    "tsify": "^1.0.3",
+    "typescript": "^2.0.2",
+    "watchify": "^3.7.0"
+  },
+  "browserify": {
+    "transform": []
   }
 }

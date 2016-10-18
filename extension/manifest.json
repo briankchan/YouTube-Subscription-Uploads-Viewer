@@ -1,0 +1,17 @@
+{
+	"manifest_version": 2,
+	"name": "YouTube Subscriptions Viewer",
+	"description": "A better way to view the latest videos from your YouTube subscriptions.",
+	"icons": {
+		"16": "icon.png"
+	},
+	"version": "0.0.1",
+	
+	"background": {
+		"scripts": ["background.js"]
+	},
+	
+	"browser_action": { "default_icon": "icon.png" },
+	"permissions": ["identity", "storage", "unlimitedStorage", "https://accounts.google.com/o/oauth2/token"],
+	"optional_permissions": ["background"]
+}

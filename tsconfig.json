@@ -1,0 +1,18 @@
+{
+	"compilerOptions": {
+		"module": "commonjs",
+		"target": "es6",
+		"moduleResolution": "node",
+		"sourceMap": true,
+		"jsx": "react",
+		"allowSyntheticDefaultImports": true,
+		"noImplicitAny": true,
+		"noImplicitReturns": true,
+		"strictNullChecks": true,
+		"experimentalDecorators": true,
+		"types": [ "chrome", "whatwg-fetch" ]
+	},
+	"exclude": [
+		"node_modules"
+	]
+}

@@ -1,12 +1,11 @@
 <!DOCTYPE html>
-<html ng-app="ytUploadsViewer">
+<html>
 <head>
-	<script src="/oauth2/oauth2.js"></script>
-	<script src="viewer.js"></script>
-	<!--<script src="https://apis.google.com/js/client.js?onload=initGapi"></script>-->
-	<link rel="stylesheet" type="text/css" href="viewer.css">
+	<script src="main.js"></script>
+	<link rel="stylesheet" type="text/css" href="main.css">
 </head>
 <body ng-view>
+<div id="container">
 	<div id="header">
 		<button id="reload-extension-button">Reload Extension</button>
 		<button id="refreshButton">Refresh Videos</button>
@@ -69,5 +68,6 @@
 			</li>
 		</ul>
 	</div>
+</div>
 </body>
 </html>

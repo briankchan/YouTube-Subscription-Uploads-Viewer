@@ -1,2 +1,0 @@
-YouTube-Subscription-Uploads-Viewer
-===================================

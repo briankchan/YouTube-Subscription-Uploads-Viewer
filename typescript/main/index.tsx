@@ -2,30 +2,57 @@
  * Main script for viewer.html that connects everything to the UI
  */
 
-require ("angular");
-var $ = require("jquery");
+import React from "react"
+import ReactDom from "react-dom"
+import { Router, Route, IndexRoute, Link, browserHistory } from "react-router"
+import { Provider } from "react-redux";
+import { createStore } from "redux";
+import reducer from "./reducers";
+import View from "./view";
 
-var backgroundPage = chrome.extension.getBackgroundPage();
+let isMainTab = messageBackgroundTab<boolean>({type: "registerTab"});
 
-var HtmlLinkify = require("html-linkify");
+function messageBackgroundTab<T>(options: any): Promise<T> {
+	return new Promise((resolve, reject) => {
+		options["target"] = "background";
+		chrome.runtime.sendMessage(options, resolve);
+	})
+}
 
-var currentView = localStorage.currentView;
 
-var app = angular.module('ytUploadsViewer', []);
 
-//app.config(function ($routeProvider) {
-//			$routeProvider.
-//					when('/', {
-//						controller: 'AuthorListCtrl',
-//						templateUrl: 'list.html'
-//					}).
-//					otherwise({
-//						redirectTo: '/'
-//					});
-//		});
+
+const store = createStore(reducer);
+
+
+ReactDom.render((
+		<Provider store={store}>
+			<Router history={browserHistory}>
+				<Route path="/" component={View}>
+					<IndexRoute component={Home} />
+					{/*<Route path="settings" component={Settings} />*/}
+					<Route path="subscriptions" component={Subscriptions}>
+						<Route path="/:channelId" component={Subscription} />
+					</Route>
+					<Route path="*" component={NoMatch} />
+				</Route>
+			</Router>
+		</Provider>
+), document.getElementById("container"));
+
+
+let backgroundPage = chrome.extension.getBackgroundPage();
+
+//import HtmlLinkify from "html-linkify";
+
+//let currentView = localStorage.currentView;
+
+//let app = angular.module('ytUploadsViewer', []);
 
 app.controller("channelsController", ["$scope", "currentView", "background", function($scope, currentView, background) {
+	console.log("hi");
 	$scope.subscriptions = background.getSubscriptionIds();
+	console.log($scope.subscriptions);
 	
 	$scope.getChannelName = background.getChannelName;
 	$scope.getChannelThumb = background.getChannelThumb;
@@ -51,7 +78,7 @@ app.controller("videosController", ["$scope", "$sce", "currentView", "background
 	$scope.getChannelThumb = function(video) { return background.getChannelThumb(video.channel); };
 	
 	$scope.formatUploadTime = function(time) { return new Date(time).toLocaleString(); };//TODO: move to directives
-	$scope.formatDescription = function(desc) { 
+	$scope.formatDescription = function(desc) {
 		return $sce.trustAsHtml(HtmlLinkify(desc.replace(/\n/g, "<br />"), {attributes:{target:"_blank"}, escape:false}));
 	};
 	
@@ -96,6 +123,10 @@ app.filter('orderObjectBy', function() {
 		return filtered;
 	};
 });
+backgroundPage.initPromise.done(function() {
+	console.log("bg loaded");
+	angular.bootstrap(document, ["ytUploadsViewer"]);
+});
 
 $(function() {
 	//keep scrolling in nav pane from bubbling to outer window
@@ -109,13 +140,13 @@ $(function() {
 	});
 	
 	//backgroundPage.updateSubscriptionsPromise.done(function() {
-			//displaySubscriptions();
-			//backgroundPage.updateUploadsPromise.done(displayCurrentView);
+	//displaySubscriptions();
+	//backgroundPage.updateUploadsPromise.done(displayCurrentView);
 	//});
 	
 	backgroundPage.authorizePromise.done(hideLogin).fail(showLogin); //TODO use events
 	
-	$("#authorizeButton").click(backgroundPage.authorize);
+	$("#authorizeButton").click(backgroundPage.logIn);
 	
 	$("#refreshButton").click(updateUploads);
 	
